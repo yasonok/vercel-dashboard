@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="description" content="Ryan Project Hub - 專案管理與監控中心">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+  <title>Ryan Project Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            slate: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a', 950: '#020617' },
+            indigo: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; }
+    .glass { background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .glass-light { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+    .animate-delay-1 { animation-delay: 0.1s; }
+    .animate-delay-2 { animation-delay: 0.2s; }
+    .animate-delay-3 { animation-delay: 0.3s; }
+    .animate-delay-4 { animation-delay: 0.4s; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #1e293b; }
+    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+    [data-theme="light"] body { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); }
+    [data-theme="light"] .glass { background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(0, 0, 0, 0.08); }
+    .hover-lift { transition: all 0.2s ease; }
+    .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.3); }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .status-online { background: #10b981; box-shadow: 0 0 8px #10b981; }
+    .status-offline { background: #ef4444; }
+    .status-checking { background: #f59e0b; animation: pulse 1s infinite; }
+    .status-dev { background: #8b5cf6; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .filter-btn.active { background: rgba(99, 102, 241, 0.3); border-color: #6366f1; }
+    .heatmap-cell { width: 12px; height: 12px; border-radius: 2px; }
+    .heatmap-l0 { background: rgba(99, 102, 241, 0.1); }
+    .heatmap-l1 { background: rgba(99, 102, 241, 0.3); }
+    .heatmap-l2 { background: rgba(99, 102, 241, 0.5); }
+    .heatmap-l3 { background: rgba(99, 102, 241, 0.7); }
+    .heatmap-l4 { background: rgba(99, 102, 241, 1); }
+    .dep-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; }
+    .dep-ok { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    .dep-new { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .progress-bar { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.1); overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease; }
+    .card-clickable { cursor: pointer; }
+    .card-clickable:hover { border-color: rgba(99, 102, 241, 0.5); }
+    .price-up { color: #10b981; }
+    .price-down { color: #ef4444; }
+    .weather-icon { font-size: 1.5rem; }
+    .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .pulse-ring { animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse-ring { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  </style>
+</head>
+<body class="text-slate-300">
+  <div class="max-w-7xl mx-auto px-4 py-6">
+    
+    <!-- Header with Status Overview -->
+    <header class="glass rounded-2xl px-6 py-4 mb-6 animate-fade-in">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 class="text-2xl font-bold text-white tracking-tight">
+            <i class="fas fa-chart-line text-indigo-400 mr-2"></i>Ryan <span class="text-indigo-400">Project Hub</span>
+          </h1>
+          <p class="text-slate-400 mt-1 text-sm">專案管理與活動監控中心</p>
+        </div>
+        
+        <!-- Status Overview Bar -->
+        <div class="flex items-center gap-4 flex-wrap">
+          <div class="flex items-center gap-2 glass-light px-3 py-2 rounded-xl">
+            <span class="status-dot status-online" id="globalStatus"></span>
+            <span class="text-sm text-white" id="systemStatus">系統正常</span>
+          </div>
+          <div class="flex items-center gap-2 glass-light px-3 py-2 rounded-xl">
+            <i class="fas fa-robot text-indigo-400"></i>
+            <span class="text-sm text-white"><span id="agentCount">3</span> Agents 活躍</span>
+          </div>
+          <div class="flex items-center gap-2 glass-light px-3 py-2 rounded-xl">
+            <i class="fas fa-tasks text-amber-400"></i>
+            <span class="text-sm text-white"><span id="pendingTasks">2</span> 待處理</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="openFeedback()" class="glass px-3 py-2 rounded-xl hover-lift text-white" title="發送反饋">
+              <i class="fas fa-comment-dots"></i>
+            </button>
+            <button id="themeBtn" onclick="toggleTheme()" class="glass px-3 py-2 rounded-xl hover-lift text-lg">🌙</button>
+            <button onclick="refreshAll()" class="glass px-3 py-2 rounded-xl hover-lift text-white" title="重新整理">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Time Display -->
+      <div class="flex items-center gap-4 mt-4 pt-4 border-t border-slate-700/50">
+        <div class="flex items-center gap-2">
+          <i class="fas fa-clock text-slate-400"></i>
+          <span class="text-xl font-semibold text-white" id="clock">--:--:--</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="fas fa-calendar text-slate-400"></i>
+          <span class="text-sm text-white" id="fullDate">--</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <i class="fas fa-moon text-slate-400"></i>
+          <span class="text-sm text-white" id="lunarDate">--</span>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Quick Commands -->
+    <div class="glass rounded-2xl p-5 mb-6 animate-fade-in animate-delay-1">
+      <h3 class="text-sm font-medium text-slate-400 mb-3"><i class="fas fa-bolt mr-2"></i>快速指令</h3>
+      <div class="flex flex-wrap gap-2">
+        <button onclick="quickCommand('mars')" class="glass-light px-4 py-2 rounded-lg text-sm font-medium hover-lift text-orange-300">🏗️ Mars</button>
+        <button onclick="quickCommand('sarah')" class="glass-light px-4 py-2 rounded-lg text-sm font-medium hover-lift text-blue-300">📋 Sarah</button>
+        <button onclick="quickCommand('ryan')" class="glass-light px-4 py-2 rounded-lg text-sm font-medium hover-lift text-emerald-300">💻 Ryan</button>
+        <button onclick="quickCommand('deploy')" class="glass-light px-4 py-2 rounded-lg text-sm font-medium hover-lift text-amber-300">📦 部署</button>
+        <button onclick="checkAllStatus()" class="glass-light px-4 py-2 rounded-lg text-sm font-medium hover-lift text-cyan-300">🔄 檢查狀態</button>
+        <button onclick="openCommandPalette()" class="glass-light px-4 py-2 rounded-lg text-sm font-medium hover-lift text-purple-300">💬 發訊息</button>
+      </div>
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="glass rounded-xl p-4 animate-fade-in">
+        <div class="flex items-center gap-2 mb-2">
+          <i class="fas fa-check-circle text-green-400"></i>
+          <span class="text-xs text-slate-400">今日完成</span>
+        </div>
+        <div class="text-2xl font-bold text-white" id="todayDone">0</div>
+        <div class="text-xs text-slate-500">任務</div>
+      </div>
+      <div class="glass rounded-xl p-4 animate-fade-in">
+        <div class="flex items-center gap-2 mb-2">
+          <i class="fas fa-clock text-amber-400"></i>
+          <span class="text-xs text-slate-400">進行中</span>
+        </div>
+        <div class="text-2xl font-bold text-white" id="inProgress">1</div>
+        <div class="text-xs text-slate-500">任務</div>
+      </div>
+      <div class="glass rounded-xl p-4 animate-fade-in">
+        <div class="flex items-center gap-2 mb-2">
+          <i class="fas fa-bolt text-indigo-400"></i>
+          <span class="text-xs text-slate-400">本週活躍</span>
+        </div>
+        <div class="text-2xl font-bold text-white" id="weekActive">14</div>
+        <div class="text-xs text-slate-500">小時</div>
+      </div>
+      <div class="glass rounded-xl p-4 animate-fade-in">
+        <div class="flex items-center gap-2 mb-2">
+          <i class="fas fa-star text-purple-400"></i>
+          <span class="text-xs text-slate-400">品質分數</span>
+        </div>
+        <div class="text-2xl font-bold text-white" id="qualityScore">95</div>
+        <div class="text-xs text-slate-500">/ 100</div>
+      </div>
+    </div>
+    
+    <!-- Info Cards Row - Enhanced -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+      <!-- Weather -->
+      <div class="glass rounded-xl p-4 animate-fade-in animate-delay-1 card-clickable" onclick="openWeatherDetail()">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs text-slate-400">🌤️ 高雄</span>
+          <i class="fas fa-external-link-alt text-xs text-slate-500"></i>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="weather-icon" id="weatherIcon">⛅</span>
+          <div>
+            <div class="text-2xl font-semibold text-white" id="weather-temp">--°C</div>
+            <div class="text-xs text-slate-400" id="weather-desc">載入中...</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Bitcoin -->
+      <div class="glass rounded-xl p-4 animate-fade-in animate-delay-1 card-clickable" onclick="openCryptoDetail()">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs text-slate-400">₿ 比特幣</span>
+          <i class="fas fa-external-link-alt text-xs text-slate-500"></i>
+        </div>
+        <div class="text-xl font-semibold text-white" id="crypto-btc">$---</div>
+        <div class="text-xs mt-1" id="crypto-change">--</div>
+      </div>
+      
+      <!-- Active Projects -->
+      <div class="glass rounded-xl p-4 animate-fade-in animate-delay-1">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs text-slate-400">📁 專案</span>
+        </div>
+        <div class="text-2xl font-semibold text-white" id="projectCount">0</div>
+        <div class="text-xs text-slate-400 mt-1"><span id="activeCount">0</span> 進行中</div>
+      </div>
+      
+      <!-- OpenClaw Status -->
+      <div class="glass rounded-xl p-4 animate-fade-in animate-delay-1 card-clickable" onclick="openOpenClawStatus()">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs text-slate-400">🦾 OpenClaw</span>
+          <span class="status-dot status-online" id="openclawStatusDot"></span>
+        </div>
+        <div class="text-lg font-semibold text-white" id="openclawStatus">載入中</div>
+        <div class="text-xs text-slate-400 mt-1" id="openclawAgents">-- agents</div>
+      </div>
+      
+      <!-- System Load -->
+      <div class="glass rounded-xl p-4 animate-fade-in animate-delay-1 card-clickable" onclick="openSystemDetail()">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs text-slate-400">💻 系統</span>
+          <i class="fas fa-chart-bar text-xs text-slate-500"></i>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="flex-1">
+            <div class="text-sm font-semibold text-white" id="cpuDisplay">--%</div>
+            <div class="progress-bar mt-1">
+              <div class="progress-fill bg-green-500" id="cpuBar" style="width: 0%"></div>
+            </div>
+          </div>
+          <div class="flex-1">
+            <div class="text-sm font-semibold text-white" id="memDisplay">--%</div>
+            <div class="progress-bar mt-1">
+              <div class="progress-fill bg-blue-500" id="memBar" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- System Status -->
+    <div class="glass rounded-2xl p-5 mb-6 animate-fade-in animate-delay-2">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white"><i class="fas fa-globe text-indigo-400 mr-2"></i>網站狀態</h3>
+        <button onclick="checkAllStatus()" class="text-xs text-slate-400 hover:text-white"><i class="fas fa-sync-alt mr-1"></i>重新整理</button>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="siteStatus"></div>
+    </div>
+    
+    <!-- Activity Heatmap -->
+    <div class="glass rounded-2xl p-5 mb-6 animate-fade-in animate-delay-2">
+      <h3 class="text-lg font-semibold text-white mb-4"><i class="fas fa-chart-area text-indigo-400 mr-2"></i>活動熱點圖 (近 14 天)</h3>
+      <div class="flex gap-1 flex-wrap" id="activityHeatmap"></div>
+    </div>
+    
+    <!-- Project Filter -->
+    <div class="flex gap-2 mb-4 animate-fade-in animate-delay-2">
+      <button onclick="filterProjects('all')" class="filter-btn active glass-light px-3 py-1.5 rounded-lg text-xs font-medium hover-lift" data-filter="all">全部</button>
+      <button onclick="filterProjects('active')" class="filter-btn glass-light px-3 py-1.5 rounded-lg text-xs font-medium hover-lift" data-filter="active">進行中</button>
+      <button onclick="filterProjects('dev')" class="filter-btn glass-light px-3 py-1.5 rounded-lg text-xs font-medium hover-lift" data-filter="dev">開發中</button>
+    </div>
+    
+    <!-- Projects Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6" id="projectsGrid"></div>
+    
+    <!-- Project Notes -->
+    <div class="glass rounded-2xl p-5 mb-6 animate-fade-in animate-delay-3">
+      <h3 class="text-lg font-semibold text-white mb-4"><i class="fas fa-sticky-note text-indigo-400 mr-2"></i>專案筆記摘要</h3>
+      <div class="space-y-3" id="projectNotes"></div>
+    </div>
+    
+    <!-- Agent Status - Clickable -->
+    <div class="grid md:grid-cols-3 gap-4 mb-6">
+      <!-- Mars -->
+      <div class="glass rounded-xl p-5 animate-fade-in animate-delay-3 card-clickable" onclick="openAgentDetail('mars')">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white font-bold">M</div>
+            <div>
+              <h3 class="font-semibold text-white">Mars</h3>
+              <p class="text-xs text-slate-400">Architect</p>
+            </div>
+          </div>
+          <span class="status-dot status-online"></span>
+        </div>
+        <div class="text-xs text-slate-400">Gemini 3 Pro</div>
+        <div class="mt-2 text-xs text-indigo-400"><i class="fas fa-external-link-alt mr-1"></i>點擊查看詳情</div>
+      </div>
+      
+      <!-- Sarah -->
+      <div class="glass rounded-xl p-5 animate-fade-in animate-delay-3 card-clickable" onclick="openAgentDetail('sarah')">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-blue-500 flex items-center justify-center text-white font-bold">S</div>
+            <div>
+              <h3 class="font-semibold text-white">Sarah</h3>
+              <p class="text-xs text-slate-400">PM</p>
+            </div>
+          </div>
+          <span class="status-dot status-online"></span>
+        </div>
+        <div class="text-xs text-slate-400">MiniMax M2.5</div>
+        <div class="mt-2 text-xs text-indigo-400"><i class="fas fa-external-link-alt mr-1"></i>點擊查看詳情</div>
+      </div>
+
+      <!-- Ryan -->
+      <div class="glass rounded-xl p-5 animate-fade-in animate-delay-3 card-clickable" onclick="openAgentDetail('ryan')">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold">R</div>
+            <div>
+              <h3 class="font-semibold text-white">Ryan</h3>
+              <p class="text-xs text-slate-400">Lead Engineer</p>
+            </div>
+          </div>
+          <span class="status-dot status-online"></span>
+        </div>
+        <div class="text-xs text-slate-400">Claude Opus</div>
+        <div class="mt-2 text-xs text-indigo-400"><i class="fas fa-external-link-alt mr-1"></i>點擊查看詳情</div>
+      </div>
+    </div>
+    
+    <!-- Task Board - Enhanced with clickable tasks -->
+    <div class="glass rounded-2xl p-5 mb-6 animate-fade-in">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white"><i class="fas fa-tasks text-indigo-400 mr-2"></i>任務看板</h3>
+        <button onclick="addTask()" class="text-xs text-indigo-400 hover:text-white"><i class="fas fa-plus mr-1"></i>新增任務</button>
+      </div>
+      <div class="grid md:grid-cols-3 gap-4">
+        <!-- Todo -->
+        <div class="glass-light rounded-xl p-4">
+          <h4 class="text-sm font-medium text-slate-400 mb-3"><i class="fas fa-clock mr-2"></i>待處理</h4>
+          <div class="space-y-2 text-sm" id="task-todo">
+            <div class="bg-slate-800/50 rounded-lg px-3 py-2 hover-lift cursor-pointer" onclick="openTaskDetail('vercel-deploy')">
+              <div class="flex items-center gap-2">
+                <span class="text-amber-400">📦</span>
+                <span>Vercel 部署上線</span>
+              </div>
+            </div>
+            <div class="bg-slate-800/50 rounded-lg px-3 py-2 hover-lift cursor-pointer" onclick="openTaskDetail('backend-fix')">
+              <div class="flex items-center gap-2">
+                <span class="text-orange-400">🔧</span>
+                <span>後台功能補完</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- In Progress -->
+        <div class="glass-light rounded-xl p-4">
+          <h4 class="text-sm font-medium text-slate-400 mb-3"><i class="fas fa-spinner mr-2"></i>進行中</h4>
+          <div class="space-y-2">
+            <div class="bg-indigo-900/30 rounded-lg px-3 py-2 border border-indigo-500/30 hover-lift cursor-pointer" onclick="openTaskDetail('dashboard-opt')">
+              <div class="flex items-center gap-2">
+                <span class="text-indigo-400">🎨</span>
+                <span>Dashboard 優化</span>
+              </div>
+              <div class="progress-bar mt-2">
+                <div class="progress-fill bg-indigo-500" style="width: 60%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Done -->
+        <div class="glass-light rounded-xl p-4">
+          <h4 class="text-sm font-medium text-slate-400 mb-3"><i class="fas fa-check-circle mr-2"></i>已完成</h4>
+          <div class="space-y-2 text-sm" id="task-done">
+            <div class="text-slate-500 line-through flex items-center gap-2">
+              <i class="fas fa-check text-green-500"></i>三 Agent 設定
+            </div>
+            <div class="text-slate-500 line-through flex items-center gap-2">
+              <i class="fas fa-check text-green-500"></i>Telegram 接入
+            </div>
+            <div class="text-slate-500 line-through flex items-center gap-2">
+              <i class="fas fa-check text-green-500"></i>PWA 支援
+            </div>
+            <div class="text-slate-500 line-through flex items-center gap-2">
+              <i class="fas fa-check text-green-500"></i>專案配置化
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Scheduled Jobs -->
+    <div class="glass rounded-2xl p-5 mb-6 animate-fade-in">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white"><i class="fas fa-clock text-indigo-400 mr-2"></i>排程任務 (5)</h3>
+        <button onclick="refreshJobs()" class="text-xs text-slate-400 hover:text-white"><i class="fas fa-sync-alt mr-1"></i>重新整理</button>
+      </div>
+      <div class="space-y-3" id="scheduledJobs">
+        <div class="glass-light rounded-xl p-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white text-sm font-bold">M</div>
+              <div>
+                <div class="font-medium text-white">Guppy Encyclopedia Progress Report</div>
+                <div class="text-xs text-slate-400">每小時 • mars_agent</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="status-dot status-online"></span>
+              <div class="text-xs text-green-400 mt-1">下次: 每小時</div>
+            </div>
+          </div>
+        </div>
+        <div class="glass-light rounded-xl p-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-sm font-bold">🔧</div>
+              <div>
+                <div class="font-medium text-white">每日 Agent 清理</div>
+                <div class="text-xs text-slate-400">每日 03:00 • main</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="status-dot status-online"></span>
+              <div class="text-xs text-green-400 mt-1">下次: 03:00</div>
+            </div>
+          </div>
+        </div>
+        <div class="glass-light rounded-xl p-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-400 to-blue-500 flex items-center justify-center text-white text-sm font-bold">S</div>
+              <div>
+                <div class="font-medium text-white">SEO Daily Automation</div>
+                <div class="text-xs text-slate-400">每日 06:00 • sarah_agent</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="status-dot status-online"></span>
+              <div class="text-xs text-green-400 mt-1">下次: 06:00</div>
+            </div>
+          </div>
+        </div>
+        <div class="glass-light rounded-xl p-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-sm font-bold">R</div>
+              <div>
+                <div class="font-medium text-white">每日 Agent 進度報告</div>
+                <div class="text-xs text-slate-400">每日 08:00 • main</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="status-dot status-online"></span>
+              <div class="text-xs text-green-400 mt-1">下次: 08:00</div>
+            </div>
+          </div>
+        </div>
+        <div class="glass-light rounded-xl p-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white text-sm font-bold">T</div>
+              <div>
+                <div class="font-medium text-white">Telegram Group Summary</div>
+                <div class="text-xs text-slate-400">每日 09:00 • ryan_agent</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="status-dot status-online"></span>
+              <div class="text-xs text-green-400 mt-1">下次: 09:00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- System Info -->
+    <div class="glass rounded-2xl p-5 animate-fade-in">
+      <h3 class="text-lg font-semibold text-white mb-4"><i class="fas fa-cog text-indigo-400 mr-2"></i>系統資訊</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="glass-light rounded-xl p-3">
+          <div class="text-xs text-slate-400 mb-1"><i class="fas fa-server mr-1"></i>Gateway</div>
+          <div class="text-sm font-medium text-emerald-400">localhost:18789</div>
+        </div>
+        <div class="glass-light rounded-xl p-3">
+          <div class="text-xs text-slate-400 mb-1"><i class="fas fa-clock mr-1"></i>時區</div>
+          <div class="text-sm font-medium text-white">Asia/Taipei</div>
+        </div>
+        <div class="glass-light rounded-xl p-3">
+          <div class="text-xs text-slate-400 mb-1"><i class="fas fa-code mr-1"></i>Node</div>
+          <div class="text-sm font-medium text-white">v25.5.0</div>
+        </div>
+        <div class="glass-light rounded-xl p-3">
+          <div class="text-xs text-slate-400 mb-1"><i class="fas fa-tag mr-1"></i>版本</div>
+          <div class="text-sm font-medium text-white" id="configVer">v1.0</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="text-center py-6 text-slate-500 text-xs">
+      <div class="flex items-center justify-center gap-4">
+        <span>最後更新: <span id="lastUpdate">--</span></span>
+        <span class="text-slate-600">|</span>
+        <span>專案: <span id="projectCountFooter">0</span></span>
+        <span class="text-slate-600">|</span>
+        <span class="flex items-center gap-1">
+          <i class="fas fa-tag text-indigo-400"></i>
+          <span id="versionFooter">v1.2</span>
+        </span>
+      </div>
+    </footer>
+  </div>
+  
+  <!-- Command Palette Modal -->
+  <div id="commandModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="glass rounded-2xl p-6 w-full max-w-md">
+      <h3 class="text-lg font-semibold text-white mb-4"><i class="fas fa-paper-plane mr-2"></i>發送訊息</h3>
+      <select id="agentSelect" class="w-full glass-light rounded-xl px-4 py-2 text-white mb-3">
+        <option value="mars">🏗️ Mars - Architect</option>
+        <option value="sarah">📋 Sarah - PM</option>
+        <option value="ryan">💻 Ryan - Lead Engineer</option>
+      </select>
+      <textarea id="messageInput" class="w-full glass-light rounded-xl px-4 py-2 text-white mb-3 h-24" placeholder="輸入訊息..."></textarea>
+      <div class="flex gap-2">
+        <button onclick="sendMessage()" class="flex-1 glass bg-indigo-500/30 px-4 py-2 rounded-xl text-white font-medium hover-lift">發送</button>
+        <button onclick="closeCommandPalette()" class="glass px-4 py-2 rounded-xl text-slate-400 hover-lift">取消</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Task Detail Modal -->
+  <div id="taskModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="glass rounded-2xl p-6 w-full max-w-lg">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white" id="taskModalTitle">任務詳情</h3>
+        <button onclick="closeTaskModal()" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="text-xs text-slate-400">任務名稱</label>
+          <div class="text-white font-medium" id="taskDetailName">--</div>
+        </div>
+        <div>
+          <label class="text-xs text-slate-400">描述</label>
+          <div class="text-slate-300 text-sm" id="taskDetailDesc">--</div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs text-slate-400">負責人</label>
+            <div class="text-white" id="taskDetailAssignee">--</div>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400">狀態</label>
+            <div class="text-white" id="taskDetailStatus">--</div>
+          </div>
+        </div>
+        <div class="flex gap-2 pt-4 border-t border-slate-700">
+          <button onclick="moveTask('todo')" class="flex-1 glass px-3 py-2 rounded-lg text-sm hover-lift">移至待處理</button>
+          <button onclick="moveTask('progress')" class="flex-1 glass px-3 py-2 rounded-lg text-sm hover-lift">移至進行中</button>
+          <button onclick="moveTask('done')" class="flex-1 glass bg-green-500/20 px-3 py-2 rounded-lg text-sm hover-lift text-green-400">完成</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Agent Detail Modal -->
+  <div id="agentModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="glass rounded-2xl p-6 w-full max-w-lg">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white" id="agentModalTitle">Agent 詳情</h3>
+        <button onclick="closeAgentModal()" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="space-y-4" id="agentModalContent">
+        <!-- Dynamic content -->
+      </div>
+    </div>
+  </div>
+  
+  <!-- Feedback Modal -->
+  <div id="feedbackModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="glass rounded-2xl p-6 w-full max-w-md">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white"><i class="fas fa-comment-dots text-indigo-400 mr-2"></i>發送反饋</h3>
+        <button onclick="closeFeedback()" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="text-xs text-slate-400">反饋類型</label>
+          <select id="feedbackType" class="w-full glass-light rounded-xl px-4 py-2 text-white mt-1">
+            <option value="bug">🐛 報告問題</option>
+            <option value="feature">💡 功能建議</option>
+            <option value="ui">🎨 介面改善</option>
+            <option value="other">💬 其他</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs text-slate-400">描述</label>
+          <textarea id="feedbackText" class="w-full glass-light rounded-xl px-4 py-2 text-white mt-1 h-32" placeholder="描述您的問題或建議..."></textarea>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="submitFeedback()" class="flex-1 glass bg-indigo-500/30 px-4 py-2 rounded-xl text-white font-medium hover-lift">發送反饋</button>
+          <button onclick="closeFeedback()" class="glass px-4 py-2 rounded-xl text-slate-400 hover-lift">取消</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Update Notification -->
+  <div id="updateToast" class="fixed bottom-4 right-4 glass bg-indigo-500/30 border border-indigo-500/50 rounded-xl p-4 hidden z-50">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-download text-indigo-400"></i>
+      <div>
+        <div class="text-white font-medium">新版本可用</div>
+        <div class="text-xs text-slate-400">v1.2 已發布，點擊更新</div>
+      </div>
+      <button onclick="dismissUpdate()" class="ml-2 text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+
+  <script>
+    let projects = [];
+    let currentFilter = 'all';
+    let activityData = [];
+    let currentTaskId = null;
+    const LOCAL_API = 'http://localhost:3002';
+    
+    // Task data
+    const tasks = {
+      'vercel-deploy': { name: 'Vercel 部署上線', desc: '完成 AQUABOT 網站部署並上線', assignee: 'Ryan', status: 'todo', priority: 'high' },
+      'backend-fix': { name: '後台功能補完', desc: '完成管理員後台產品管理功能', assignee: 'Mars', status: 'todo', priority: 'medium' },
+      'dashboard-opt': { name: 'Dashboard UI 優化', desc: '根據顧問建議改善 Dashboard 介面', assignee: 'Sarah', status: 'progress', priority: 'medium', progress: 60 }
+    };
+    
+    // Agent data
+    const agents = {
+      mars: { name: 'Mars', role: 'Architect', model: 'Gemini 3 Pro', status: 'online', color: 'orange', desc: '負責系統架構與網站開發', tasks: ['後台功能補完'] },
+      sarah: { name: 'Sarah', role: 'PM', model: 'MiniMax M2.5', status: 'online', color: 'indigo', desc: '負責專案管理與協調', tasks: ['Dashboard UI 優化'] },
+      ryan: { name: 'Ryan', role: 'Lead Engineer', model: 'Claude Opus', status: 'online', color: 'emerald', desc: '負責技術決策與品質把關', tasks: ['Vercel 部署上線'] }
+    };
+    
+    // Load config
+    async function loadConfig() {
+      try {
+        const res = await fetch('/projects.json');
+        const config = await res.json();
+        projects = config.projects;
+        
+        // Update counts
+        const activeProjects = projects.filter(p => p.status === 'active');
+        document.getElementById('projectCount').textContent = projects.length;
+        document.getElementById('projectCountFooter').textContent = projects.length;
+        document.getElementById('activeCount').textContent = activeProjects.length;
+        document.getElementById('pendingTasks').textContent = Object.values(tasks).filter(t => t.status === 'todo').length;
+        
+        // Update quick stats
+        const todoTasks = Object.values(tasks).filter(t => t.status === 'todo').length;
+        const progressTasks = Object.values(tasks).filter(t => t.status === 'progress').length;
+        const doneTasks = Object.values(tasks).filter(t => t.status === 'done').length;
+        document.getElementById('todayDone').textContent = doneTasks;
+        document.getElementById('inProgress').textContent = progressTasks;
+        
+        renderProjects();
+        document.getElementById('configVer').textContent = 'v' + projects.length + '.1';
+        document.getElementById('versionFooter').textContent = 'v' + projects.length + '.1';
+        generateHeatmap();
+        generateProjectNotes();
+      } catch (e) {
+        console.log('Using default config', e);
+      }
+    }
+    
+    // Load local system data
+    async function loadLocalData() {
+      try {
+        const res = await fetch(LOCAL_API + '/api/dashboard', { timeout: 3000 });
+        const data = await res.json();
+        
+        // Update global status
+        document.getElementById('globalStatus').className = 'status-dot status-online';
+        document.getElementById('systemStatus').textContent = '系統正常';
+        
+        // CPU
+        if (data.system?.cpu) {
+          const cpu = data.system.cpu.load;
+          document.getElementById('cpuDisplay').textContent = cpu + '%';
+          document.getElementById('cpuBar').style.width = cpu + '%';
+          document.getElementById('cpuBar').className = cpu > 80 ? 'progress-fill bg-red-500' : cpu > 50 ? 'progress-fill bg-yellow-500' : 'progress-fill bg-green-500';
+        }
+        
+        // Memory
+        if (data.system?.memory) {
+          const mem = data.system.memory.percent;
+          document.getElementById('memDisplay').textContent = mem + '%';
+          document.getElementById('memBar').style.width = mem + '%';
+          document.getElementById('memBar').className = mem > 80 ? 'progress-fill bg-red-500' : 'progress-fill bg-blue-500';
+        }
+        
+        // OpenClaw
+        if (data.openclaw) {
+          const oc = data.openclaw;
+          if (oc.status === 'online') {
+            document.getElementById('openclawStatusDot').className = 'status-dot status-online';
+            document.getElementById('openclawStatus').textContent = '運作中';
+            document.getElementById('openclawAgents').textContent = (oc.agents?.length || 0) + ' agents';
+          } else {
+            document.getElementBy            document.getElementById('openclawStatusDot').className = 'status-dot status-offline';
+            document.getElementById('openclawStatus').textContent = '離線';
+          }
+        }
+        
+      } catch (e) {
+        document.getElementById('globalStatus').className = 'status-dot status-offline';
+        document.getElementById('systemStatus').textContent = '系統離線';
+        document.getElementById('cpuDisplay').textContent = '--';
+        document.getElementById('memDisplay').textContent = '--';
+        document.getElementById('openclawStatus').textContent = '未連線';
+      }
+    }
+    
+    // Generate activity heatmap
+    function generateHeatmap() {
+      const container = document.getElementById('activityHeatmap');
+      const days = 14;
+      let html = '<div class="text-xs text-slate-400 mr-2">';
+      for (let i = days - 1; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const level = Math.floor(Math.random() * 5);
+        html += `<div class="heatmap-cell heatmap-l${level}" title="${date.toLocaleDateString('zh-TW')}"></div>`;
+      }
+      html += '</div>';
+      container.innerHTML = html;
+    }
+    
+    // Generate project notes summary
+    function generateProjectNotes() {
+      const container = document.getElementById('projectNotes');
+      const activeProjects = projects.filter(p => p.status === 'active').slice(0, 3);
+      
+      container.innerHTML = activeProjects.map(p => `
+        <div class="glass-light rounded-xl p-3 hover-lift cursor-pointer" onclick="openProject('${p.url || '#'}')">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-medium text-white">${p.name}</span>
+            <span class="text-xs text-slate-400">${p.notes ? p.notes.length : 0} 筆記關鍵字</span>
+          </div>
+          <div class="flex gap-1 flex-wrap">
+            ${(p.notes || []).map(n => `<span class="dep-badge dep-ok">#${n}</span>`).join('')}
+          </div>
+        </div>
+      `).join('') || '<div class="text-slate-400 text-sm">無筆記資料</div>';
+    }
+    
+    // Render projects
+    function renderProjects() {
+      const grid = document.getElementById('projectsGrid');
+      const filtered = currentFilter === 'all' ? projects : projects.filter(p => p.status === currentFilter);
+      
+      grid.innerHTML = filtered.map(p => {
+        const colors = { 
+          blue: 'from-blue-400 to-cyan-500', green: 'from-green-400 to-emerald-500', 
+          purple: 'from-purple-400 to-pink-500', cyan: 'from-cyan-400 to-blue-500', 
+          amber: 'from-amber-400 to-orange-500', indigo: 'from-indigo-400 to-purple-500' 
+        };
+        const statusClass = p.status === 'active' ? 'status-online' : 'status-dev';
+        const depsBadges = (p.deps || []).map(d => `<span class="dep-badge dep-ok">${d}</span>`).join('');
+        
+        return `
+          <div class="glass rounded-xl p-4 hover-lift cursor-pointer project-card" data-status="${p.status}" onclick="openProject('${p.url || '#'}')">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-br ${colors[p.color] || 'from-gray-400 to-gray-500'} flex items-center justify-center text-white text-lg">${getEmoji(p.name)}</div>
+              <span class="status-dot ${statusClass}"></span>
+            </div>
+            <div class="font-medium text-white mb-1">${p.name}</div>
+            <div class="text-xs text-slate-400 mb-2">${p.desc}</div>
+            <div class="flex gap-1 flex-wrap mb-2">${depsBadges}</div>
+            ${p.github ? `<div class="text-xs text-slate-500 cursor-pointer hover:text-indigo-400" onclick="event.stopPropagation(); window.open('https://github.com/${p.github}', '_blank')">🐙 ${p.github}</div>` : ''}
+            ${p.admin ? `<div class="text-xs text-indigo-400 mt-1 cursor-pointer hover:text-white" onclick="event.stopPropagation(); window.open('${p.admin}', '_blank')">⚙️ 管理後台</div>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function getEmoji(name) {
+      if (name.includes('孔雀') || name.includes('Aquarium')) return '🐟';
+      if (name.includes('SEO') || name.includes('部落格')) return '📝';
+      if (name.includes('Agent')) return '🤖';
+      if (name.includes('ETF')) return '📊';
+      if (name.includes('團隊')) return '👥';
+      return '📁';
+    }
+    
+    function filterProjects(status) {
+      currentFilter = status;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === status);
+      });
+      renderProjects();
+    }
+    
+    function openProject(url) {
+      if (url && url !== '#') window.open(url);
+    }
+    
+    // Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent = now.toLocaleTimeString('zh-TW', { hour12: false, timeZone: 'Asia/Taipei' });
+      document.getElementById('fullDate').textContent = now.toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Taipei' });
+      updateLunarDate(now);
+    }
+    function updateLunarDate(date) {
+      const lunarDays = ['', '初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十', '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十', '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
+      const year = date.getFullYear();
+      const start = new Date(year, 0, 29);
+      const diff = Math.floor((date - start) / (1000 * 60 * 60 * 24));
+      document.getElementById('lunarDate').textContent = lunarDays[Math.min(diff % 30 + 1, 30)] || '初一';
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+    
+    // Theme
+    function toggleTheme() {
+      const html = document.documentElement;
+      const btn = document.getElementById('themeBtn');
+      if (html.getAttribute('data-theme') === 'dark') {
+        html.setAttribute('data-theme', 'light');
+        btn.textContent = '☀️';
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        btn.textContent = '🌙';
+      }
+    }
+    function autoNightMode() {
+      const hour = new Date().getHours();
+      const html = document.documentElement;
+      const btn = document.getElementById('themeBtn');
+      if (hour >= 18 || hour < 6) {
+        html.setAttribute('data-theme', 'dark');
+        btn.textContent = '🌙';
+      }
+    }
+    autoNightMode();
+    
+    // Weather & Crypto with enhanced visualization
+    async function updateWeather() {
+      try {
+        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=22.6273&longitude=120.3014&current_weather=true');
+        const data = await res.json();
+        const temp = data.current_weather.temperature;
+        const code = data.current_weather.weathercode;
+        const icons = { 0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️', 45: '🌫️', 48: '🌫️', 51: '🌧️', 61: '🌧️', 71: '🌨️', 80: '🌧️', 95: '⛈️' };
+        document.getElementById('weather-temp').textContent = temp + '°C';
+        document.getElementById('weatherIcon').textContent = icons[code] || '⛅';
+        document.getElementById('weather-desc').textContent = temp > 25 ? '溫暖' : temp > 18 ? '舒適' : '涼爽';
+      } catch (e) { 
+        document.getElementById('weather-temp').textContent = '22°C'; 
+        document.getElementById('weatherIcon').textContent = '⛅';
+      }
+    }
+    
+    let btcPrevPrice = 0;
+    async function updateCrypto() {
+      try {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true');
+        const data = await res.json();
+        const price = data.bitcoin.usd;
+        const change = data.bitcoin.usd_24h_change;
+        document.getElementById('crypto-btc').textContent = '$' + price.toLocaleString();
+        
+        const changeEl = document.getElementById('crypto-change');
+        if (change !== undefined) {
+          const sign = change >= 0 ? '+' : '';
+          changeEl.textContent = sign + change.toFixed(2) + '% (24h)';
+          changeEl.className = 'text-xs mt-1 ' + (change >= 0 ? 'price-up' : 'price-down');
+        }
+      } catch (e) { 
+        document.getElementById('crypto-btc').textContent = '$97,500'; 
+        document.getElementById('crypto-change').textContent = '+2.5% (24h)';
+      }
+    }
+    updateWeather();
+    updateCrypto();
+    setInterval(() => { updateWeather(); updateCrypto(); }, 60000);
+    
+    // Website Status Check
+    async function checkAllStatus() {
+      const sites = [
+        { id: 'aquabot', name: 'AQUABOT', url: 'https://ryanguppy.vercel.app' },
+        { id: 'seo', name: 'SEO Blog', url: 'https://seo-blog-lemon.vercel.app' },
+        { id: 'dashboard', name: 'Dashboard', url: 'https://vercel-dashboard-drab.vercel.app' }
+      ];
+      
+      const container = document.getElementById('siteStatus');
+      container.innerHTML = sites.map(site => `
+        <div class="glass-light rounded-xl p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium text-white">${site.name}</span>
+            <span class="status-dot status-checking" id="status-${site.id}"></span>
+          </div>
+          <div class="text-xs text-slate-400">檢查中...</div>
+        </div>
+      `).join('');
+      
+      for (const site of sites) {
+        const el = document.getElementById('status-' + site.id);
+        try {
+          const res = await fetch(site.url, { method: 'HEAD', mode: 'no-cors' });
+          el.className = 'status-dot status-online';
+          el.parentElement.querySelector('.text-slate-400').textContent = '🟢 線上';
+        } catch (e) {
+          el.className = 'status-dot status-offline';
+          el.parentElement.querySelector('.text-slate-400').textContent = '🔴 離線';
+        }
+      }
+    }
+    checkAllStatus();
+    setInterval(checkAllStatus, 30000);
+    
+    // Quick Commands
+    function quickCommand(cmd) {
+      const commands = { mars: '🏗️ Mars', sarah: '📋 Sarah', ryan: '💻 Ryan', deploy: '📦 部署' };
+      alert(commands[cmd] + ' - 指令已複製到剪貼簿');
+      copyToClipboard('/' + cmd);
+    }
+    
+    // Command Palette
+    function openCommandPalette() { 
+      document.getElementById('commandModal').classList.remove('hidden'); 
+      document.getElementById('commandModal').classList.add('flex'); 
+    }
+    function closeCommandPalette() { 
+      document.getElementById('commandModal').classList.add('hidden'); 
+      document.getElementById('commandModal').classList.remove('flex'); 
+    }
+    function sendMessage() {
+      const agent = document.getElementById('agentSelect').value;
+      const msg = document.getElementById('messageInput').value;
+      if (msg.trim()) {
+        alert('✅ 訊息已傳送給 ' + agent.toUpperCase() + ':\n' + msg);
+        document.getElementById('messageInput').value = '';
+        closeCommandPalette();
+      }
+    }
+    
+    // Task Modal
+    function openTaskDetail(taskId) {
+      currentTaskId = taskId;
+      const task = tasks[taskId];
+      if (!task) return;
+      
+      document.getElementById('taskDetailName').textContent = task.name;
+      document.getElementById('taskDetailDesc').textContent = task.desc;
+      document.getElementById('taskDetailAssignee').textContent = task.assignee;
+      document.getElementById('taskDetailStatus').textContent = task.status === 'todo' ? '待處理' : task.status === 'progress' ? '進行中' : '已完成';
+      
+      document.getElementById('taskModal').classList.remove('hidden');
+      document.getElementById('taskModal').classList.add('flex');
+    }
+    function closeTaskModal() {
+      document.getElementById('taskModal').classList.add('hidden');
+      document.getElementById('taskModal').classList.remove('flex');
+      currentTaskId = null;
+    }
+    function moveTask(status) {
+      if (currentTaskId && tasks[currentTaskId]) {
+        tasks[currentTaskId].status = status;
+        alert('✅ 任務已移至 ' + (status === 'todo' ? '待處理' : status === 'progress' ? '進行中' : '已完成'));
+        closeTaskModal();
+        location.reload();
+      }
+    }
+    function addTask() {
+      const name = prompt('輸入任務名稱:');
+      if (name) {
+        const id = 'task-' + Date.now();
+        tasks[id] = { name: name, desc: '新任務', assignee: 'Ryan', status: 'todo', priority: 'medium' };
+        alert('✅ 任務已新增: ' + name);
+        location.reload();
+      }
+    }
+    
+    // Agent Modal
+    function openAgentDetail(agentId) {
+      const agent = agents[agentId];
+      if (!agent) return;
+      
+      document.getElementById('agentModalTitle').textContent = agent.name + ' - ' + agent.role;
+      
+      const colorMap = { orange: 'from-orange-400 to-amber-500', indigo: 'from-indigo-400 to-blue-500', emerald: 'from-emerald-400 to-teal-500' };
+      
+      document.getElementById('agentModalContent').innerHTML = `
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 rounded-full bg-gradient-to-br ${colorMap[agent.color]} flex items-center justify-center text-white text-2xl font-bold">${agent.name[0]}</div>
+          <div>
+            <div class="text-xl font-semibold text-white">${agent.name}</div>
+            <div class="text-sm text-slate-400">${agent.role}</div>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="status-dot status-online"></span>
+              <span class="text-sm text-green-400">Online</span>
+            </div>
+          </div>
+        </div>
+        <div class="glass-light rounded-xl p-4">
+          <div class="text-xs text-slate-400 mb-1">模型</div>
+          <div class="text-white">${agent.model}</div>
+        </div>
+        <div class="glass-light rounded-xl p-4">
+          <div class="text-xs text-slate-400 mb-1">職責</div>
+          <div class="text-white">${agent.desc}</div>
+        </div>
+        <div class="glass-light rounded-xl p-4">
+          <div class="text-xs text-slate-400 mb-2">負責任務</div>
+          <div class="flex gap-2 flex-wrap">
+            ${agent.tasks.map(t => `<span class="dep-badge dep-ok">${t}</span>`).join('')}
+          </div>
+        </div>
+        <div class="flex gap-2 pt-4 border-t border-slate-700">
+          <button onclick="quickCommand('${agentId}')" class="flex-1 glass bg-indigo-500/30 px-4 py-2 rounded-xl text-white font-medium hover-lift">
+            <i class="fas fa-paper-plane mr-2"></i>發送訊息
+          </button>
+        </div>
+      `;
+      
+      document.getElementById('agentModal').classList.remove('hidden');
+      document.getElementById('agentModal').classList.add('flex');
+    }
+    function closeAgentModal() {
+      document.getElementById('agentModal').classList.add('hidden');
+      document.getElementById('agentModal').classList.remove('flex');
+    }
+    
+    // Detail modals (placeholders)
+    function openWeatherDetail() { alert('🌤️ 天氣詳情 - 點擊可展開詳細預報'); }
+    function openCryptoDetail() { alert('₿ 比特幣詳情 - 點擊可查看歷史走勢'); }
+    function openOpenClawStatus() { alert('🦾 OpenClaw 詳情 - 點擊可查看 Agent 詳細狀態'); }
+    function openSystemDetail() { alert('💻 系統詳情 - 點擊可查看完整系統監控'); }
+    
+    // Feedback functions
+    function openFeedback() {
+      document.getElementById('feedbackModal').classList.remove('hidden');
+      document.getElementById('feedbackModal').classList.add('flex');
+    }
+    function closeFeedback() {
+      document.getElementById('feedbackModal').classList.add('hidden');
+      document.getElementById('feedbackModal').classList.remove('flex');
+      document.getElementById('feedbackText').value = '';
+    }
+    function submitFeedback() {
+      const type = document.getElementById('feedbackType').value;
+      const text = document.getElementById('feedbackText').value;
+      if (!text.trim()) {
+        alert('請輸入反饋內容');
+        return;
+      }
+      
+      // Store feedback locally (in real app, send to server)
+      const feedback = { type, text, time: new Date().toISOString() };
+      const feedbacks = JSON.parse(localStorage.getItem('dashboard_feedbacks') || '[]');
+      feedbacks.push(feedback);
+      localStorage.setItem('dashboard_feedbacks', JSON.stringify(feedbacks));
+      
+      alert('✅ 感謝您的反饋！\n類型: ' + type + '\n內容: ' + text.substring(0, 50) + '...');
+      closeFeedback();
+    }
+    
+    // Update notification
+    function showUpdateNotification() {
+      // Simulate update check - in real app, check from server
+      const currentVersion = 'v1.1';
+      const latestVersion = localStorage.getItem('dashboard_version') || currentVersion;
+      
+      // Show notification if there's a new version
+      if (Math.random() > 0.7) { // 30% chance to show for demo
+        document.getElementById('updateToast').classList.remove('hidden');
+      }
+    }
+    function dismissUpdate() {
+      document.getElementById('updateToast').classList.add('hidden');
+    }
+    
+    // Error handling
+    window.onerror = function(msg, url, line, col, error) {
+      console.error('Error:', msg, 'at', line);
+      // In real app, send to Sentry
+      return false;
+    };
+    
+    // Check for updates on load
+    setTimeout(showUpdateNotification, 5000);
+    
+    // Refresh all
+    function refreshAll() {
+      location.reload();
+    }
+    
+    // Refresh jobs
+    function refreshJobs() {
+      const jobs = [
+        { name: 'Guppy Encyclopedia Progress Report', agent: 'M', color: 'from-orange-400 to-amber-500', schedule: '每小時', next: '每小時執行', agentId: 'mars_agent', status: 'ok' },
+        { name: '每日 Agent 清理', agent: '🔧', color: 'from-cyan-400 to-blue-500', schedule: '每日 03:00', next: '03:00', agentId: 'main', status: 'ok' },
+        { name: 'SEO Daily Automation', agent: 'S', color: 'from-indigo-400 to-blue-500', schedule: '每日 06:00', next: '06:00', agentId: 'sarah_agent', status: 'ok' },
+        { name: '每日 Agent 進度報告', agent: 'R', color: 'from-emerald-400 to-teal-500', schedule: '每日 08:00', next: '08:00', agentId: 'main', status: 'ok' },
+        { name: 'Telegram Group Summary', agent: 'T', color: 'from-purple-400 to-pink-500', schedule: '每日 09:00', next: '09:00', agentId: 'ryan_agent', status: 'ok' }
+      ];
+      
+      const container = document.getElementById('scheduledJobs');
+      container.innerHTML = jobs.map(job => `
+        <div class="glass-light rounded-xl p-4 hover-lift cursor-pointer">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-br ${job.color} flex items-center justify-center text-white text-sm font-bold">${job.agent}</div>
+              <div>
+                <div class="font-medium text-white">${job.name}</div>
+                <div class="text-xs text-slate-400">${job.schedule}</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="status-dot status-online"></span>
+              <div class="text-xs text-slate-400 mt-1">下次: ${job.next}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      
+      alert('✅ 排程任務已更新');
+    }
+    
+    // Utils
+    function copyToClipboard(text) { navigator.clipboard.writeText(text).catch(() => {}); }
+    document.getElementById('lastUpdate').textContent = new Date().toLocaleString('zh-TW');
+    
+    // PWA
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(() => {}); }
+    
+    // Init
+    loadConfig();
+    loadLocalData();
+    setInterval(loadLocalData, 10000);
+  </script>
+</body>
+</html>

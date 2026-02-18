@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文章檢查工具 - SEO Blog</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0f172a; min-height: 100vh; padding: 20px; }
+    .card { background: rgba(30,41,59,0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+    .card.checked { border-color: #f59e0b; background: rgba(245,158,11,0.1); }
+    .btn { padding: 8px 16px; border-radius: 8px; font-weight: 500; cursor: pointer; }
+    .btn-primary { background: #6366f1; color: white; border: none; }
+    .btn-primary:hover { background: #4f46e5; }
+    .checkbox { width: 20px; height: 20px; cursor: pointer; }
+    .tag { font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-right: 4px; }
+    .tag-warning { background: rgba(245,158,11,0.2); color: #f59e0b; }
+    .tag-error { background: rgba(239,68,68,0.2); color: #ef4444; }
+    .tag-ok { background: rgba(16,185,129,0.2); color: #10b981; }
+    .filter-btn { padding: 6px 12px; border-radius: 6px; font-size: 14px; margin-right: 8px; cursor: pointer; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; }
+    .filter-btn.active { background: rgba(99,102,241,0.3); border-color: #6366f1; color: white; }
+  </style>
+</head>
+<body class="text-slate-300">
+  <div class="max-w-5xl mx-auto">
+    <div class="card mb-6">
+      <h1 class="text-2xl font-bold text-white mb-2">📝 文章檢查工具</h1>
+      <p class="text-slate-400 text-sm mb-4">勾選需要改善的文章，然後點擊「複製勾選的文章」發送給 Sarah 改善</p>
+      
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button onclick="filterAll()" class="filter-btn active" id="filter-all">全部</button>
+        <button onclick="filterChecked()" class="filter-btn" id="filter-checked">已勾選</button>
+        <button onclick="filterLowWords()" class="filter-btn" id="filter-low">字數不足</button>
+        <button onclick="filterLowImages()" class="filter-btn" id="filter-images">圖片不足</button>
+      </div>
+      
+      <div class="flex gap-2">
+        <button onclick="copyChecked()" class="btn btn-primary">📋 複製勾選的文章</button>
+        <button onclick="selectAll()" class="btn" style="background:rgba(255,255,255,0.1);color:white;border:none;">全選</button>
+        <button onclick="clearAll()" class="btn" style="background:rgba(255,255,255,0.1);color:white;border:none;">清除</button>
+      </div>
+    </div>
+    
+    <div id="articles"></div>
+  </div>
+  
+  <script>
+    let articles = [];
+    let currentFilter = 'all';
+    
+    // Standards
+    const MIN_WORDS = 1500;
+    const MIN_IMAGES = 3;
+    
+    // Load articles
+    async function loadArticles() {
+      const res = await fetch('/articles.json');
+      const data = await res.json();
+      articles = data.articles;
+      render();
+    }
+    
+    function getStatus(article) {
+      const issues = [];
+      if (article.words < MIN_WORDS) issues.push('字數不足');
+      if (article.images < MIN_IMAGES) issues.push('圖片不足');
+      return issues;
+    }
+    
+    function render() {
+      let filtered = articles;
+      if (currentFilter === 'checked') filtered = articles.filter(a => a.checked);
+      else if (currentFilter === 'low-words') filtered = articles.filter(a => a.words < MIN_WORDS);
+      else if (currentFilter === 'low-images') filtered = articles.filter(a => a.images < MIN_IMAGES);
+      
+      const container = document.getElementById('articles');
+      container.innerHTML = filtered.map(a => {
+        const issues = getStatus(a);
+        const issueTags = issues.map(i => `<span class="tag tag-warning">${i}</span>`).join('');
+        const checkedClass = a.checked ? 'checked' : '';
+        
+        return `
+          <div class="card ${checkedClass}" onclick="toggle(${a.id})">
+            <div class="flex items-start gap-3">
+              <input type="checkbox" class="checkbox mt-1" ${a.checked ? 'checked' : ''} onclick="event.stopPropagation();toggle(${a.id})">
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-medium text-white">${a.title}</span>
+                  <span class="text-xs text-slate-400">ID: ${a.id}</span>
+                </div>
+                <div class="flex flex-wrap gap-2 text-sm">
+                  <span class="tag ${a.words >= MIN_WORDS ? 'tag-ok' : 'tag-error'}">字數: ${a.words}</span>
+                  <span class="tag ${a.images >= MIN_IMAGES ? 'tag-ok' : 'tag-error'}">圖片: ${a.images}</span>
+                  <span class="tag tag-ok">表格: ${a.tables}</span>
+                  <span class="tag tag-ok">來源: ${a.source}</span>
+                </div>
+                ${issueTags ? `<div class="mt-2">${issueTags}</div>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function toggle(id) {
+      const article = articles.find(a => a.id === id);
+      if (article) {
+        article.checked = !article.checked;
+        render();
+      }
+    }
+    
+    function filterAll() { currentFilter = 'all'; updateFilterBtns(); render(); }
+    function filterChecked() { currentFilter = 'checked'; updateFilterBtns(); render(); }
+    function filterLowWords() { currentFilter = 'low-words'; updateFilterBtns(); render(); }
+    function filterLowImages() { currentFilter = 'low-images'; updateFilterBtns(); render(); }
+    
+    function updateFilterBtns() {
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      const btnId = currentFilter === 'all' ? 'filter-all' : currentFilter === 'checked' ? 'filter-checked' : currentFilter === 'low-words' ? 'filter-low' : 'filter-images';
+      document.getElementById(btnId).classList.add('active');
+    }
+    
+    function selectAll() {
+      articles.forEach(a => a.checked = true);
+      render();
+    }
+    
+    function clearAll() {
+      articles.forEach(a => a.checked = false);
+      render();
+    }
+    
+    function copyChecked() {
+      const checked = articles.filter(a => a.checked);
+      if (checked.length === 0) {
+        alert('請先勾選需要改善的文章');
+        return;
+      }
+      
+      let text = '📝 需要改善的文章：\n\n';
+      checked.forEach(a => {
+        const issues = getStatus(a).join('、');
+        text += `• ${a.title}\n`;
+        text += `  字數: ${a.words} | 圖片: ${a.images} | 表格: ${a.tables}\n`;
+        if (issues) text += `  問題: ${issues}\n`;
+        text += '\n';
+      });
+      
+      navigator.clipboard.writeText(text).then(() => {
+        alert('✅ 已複製到剪貼簿！可以發送給 Sarah 了');
+      });
+    }
+    
+    loadArticles();
+  </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{
+  "projects": [
+    {
+      "id": "aquabot",
+      "name": "Aquarium Studio",
+      "desc": "孔雀魚購物網站",
+      "url": "https://ryanguppy.vercel.app",
+      "admin": "https://ryanguppy.vercel.app/admin",
+      "status": "active",
+      "folder": "project_shared",
+      "github": "yasonok/ryanguppy",
+      "color": "blue",
+      "deps": ["supabase-js", "tailwindcss"],
+      "notes": ["aquabot", "guppy"]
+    },
+    {
+      "id": "seo-blog",
+      "name": "RYAN生活黑客",
+      "desc": "SEO 部落格",
+      "url": "https://seo-blog-lemon.vercel.app",
+      "status": "active",
+      "folder": "seo-blog",
+      "github": "yasonok/seo-blog",
+      "color": "green",
+      "deps": ["hexo"],
+      "notes": ["seo", "blog"]
+    },
+    {
+      "id": "agent-monitor",
+      "name": "Agent Monitor",
+      "desc": "OpenClaw Agent 監控",
+      "status": "dev",
+      "folder": "agent-monitor",
+      "color": "purple",
+      "notes": ["agent"]
+    },
+    {
+      "id": "guppy-encyclopedia",
+      "name": "孔雀魚百科",
+      "desc": "孔雀魚養殖百科",
+      "status": "dev",
+      "folder": "guppy_encyclopedia",
+      "color": "cyan",
+      "notes": ["guppy", "encyclopedia"]
+    },
+    {
+      "id": "etf-monitor",
+      "name": "ETF 監控",
+      "desc": "ETF 價格追蹤",
+      "status": "dev",
+      "folder": "etf-monitor",
+      "color": "amber",
+      "notes": ["etf", "finance"]
+    },
+    {
+      "id": "team-collab",
+      "name": "團隊協作",
+      "desc": "多 Agent 協作系統",
+      "status": "active",
+      "folder": "team_collab",
+      "github": "yasonok/team-collab",
+      "color": "indigo",
+      "notes": ["team", "collab"]
+    }
+  ],
+  "local": {
+    "workspace": "/Users/ryanchiang/.openclaw/workspace",
+    "ports": [3000, 5173, 8080, 18789]
+  }
+}
