@@ -95,8 +95,8 @@
             <span class="text-sm text-white"><span id="agentCount">3</span> Agents 活躍</span>
           </div>
           <div class="flex items-center gap-2 glass-light px-3 py-2 rounded-xl">
-            <i class="fas fa-tasks text-amber-400"></i>
-            <span class="text-sm text-white"><span id="pendingTasks">2</span> 待處理</span>
+            <i class="fas fa-clock text-amber-400"></i>
+            <span class="text-sm text-white"><span id="cronJobCount">6</span> 排程任務</span>
           </div>
           <div class="flex items-center gap-3">
             <button onclick="openFeedback()" class="glass px-3 py-2 rounded-xl hover-lift text-white" title="發送反饋">
@@ -131,19 +131,19 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       <div class="glass rounded-xl p-4 animate-fade-in">
         <div class="flex items-center gap-2 mb-2">
-          <i class="fas fa-check-circle text-green-400"></i>
-          <span class="text-xs text-slate-400">今日完成</span>
+          <i class="fas fa-folder text-green-400"></i>
+          <span class="text-xs text-slate-400">專案總數</span>
         </div>
-        <div class="text-2xl font-bold text-white" id="todayDone">0</div>
-        <div class="text-xs text-slate-500">任務</div>
+        <div class="text-2xl font-bold text-white" id="projectCount">0</div>
+        <div class="text-xs text-slate-500"><span id="activeCount">0</span> 進行中</div>
       </div>
       <div class="glass rounded-xl p-4 animate-fade-in">
         <div class="flex items-center gap-2 mb-2">
-          <i class="fas fa-clock text-amber-400"></i>
-          <span class="text-xs text-slate-400">進行中</span>
+          <i class="fas fa-globe text-amber-400"></i>
+          <span class="text-xs text-slate-400">上線網站</span>
         </div>
-        <div class="text-2xl font-bold text-white" id="inProgress">1</div>
-        <div class="text-xs text-slate-500">任務</div>
+        <div class="text-2xl font-bold text-white" id="siteCount">0</div>
+        <div class="text-xs text-slate-500">sites</div>
       </div>
       <div class="glass rounded-xl p-4 animate-fade-in">
         <div class="flex items-center gap-2 mb-2">
@@ -190,13 +190,13 @@
         <div class="text-xs mt-1" id="crypto-change">--</div>
       </div>
       
-      <!-- Active Projects -->
+      <!-- Telegram Groups -->
       <div class="glass rounded-xl p-4 animate-fade-in animate-delay-1">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-xs text-slate-400">📁 專案</span>
+          <span class="text-xs text-slate-400">💬 Telegram</span>
         </div>
-        <div class="text-2xl font-semibold text-white" id="projectCount">0</div>
-        <div class="text-xs text-slate-400 mt-1"><span id="activeCount">0</span> 進行中</div>
+        <div class="text-2xl font-semibold text-white" id="tgGroupCount">0</div>
+        <div class="text-xs text-slate-400 mt-1">群組</div>
       </div>
       
       <!-- OpenClaw Status -->
@@ -346,69 +346,6 @@
         </div>
         <div class="text-xs text-slate-400">Claude Opus</div>
         <div class="mt-2 text-xs text-indigo-400"><i class="fas fa-external-link-alt mr-1"></i>點擊查看詳情</div>
-      </div>
-    </div>
-    
-    <!-- Task Board - Enhanced with clickable tasks -->
-    <div class="glass rounded-2xl p-5 mb-6 animate-fade-in">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-white"><i class="fas fa-tasks text-indigo-400 mr-2"></i>任務看板</h3>
-        <button onclick="addTask()" class="text-xs text-indigo-400 hover:text-white"><i class="fas fa-plus mr-1"></i>新增任務</button>
-      </div>
-      <div class="grid md:grid-cols-3 gap-4">
-        <!-- Todo -->
-        <div class="glass-light rounded-xl p-4">
-          <h4 class="text-sm font-medium text-slate-400 mb-3"><i class="fas fa-clock mr-2"></i>待處理</h4>
-          <div class="space-y-2 text-sm" id="task-todo">
-            <div class="bg-slate-800/50 rounded-lg px-3 py-2 hover-lift cursor-pointer" onclick="openTaskDetail('vercel-deploy')">
-              <div class="flex items-center gap-2">
-                <span class="text-amber-400">📦</span>
-                <span>Vercel 部署上線</span>
-              </div>
-            </div>
-            <div class="bg-slate-800/50 rounded-lg px-3 py-2 hover-lift cursor-pointer" onclick="openTaskDetail('backend-fix')">
-              <div class="flex items-center gap-2">
-                <span class="text-orange-400">🔧</span>
-                <span>後台功能補完</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- In Progress -->
-        <div class="glass-light rounded-xl p-4">
-          <h4 class="text-sm font-medium text-slate-400 mb-3"><i class="fas fa-spinner mr-2"></i>進行中</h4>
-          <div class="space-y-2">
-            <div class="bg-indigo-900/30 rounded-lg px-3 py-2 border border-indigo-500/30 hover-lift cursor-pointer" onclick="openTaskDetail('dashboard-opt')">
-              <div class="flex items-center gap-2">
-                <span class="text-indigo-400">🎨</span>
-                <span>Dashboard 優化</span>
-              </div>
-              <div class="progress-bar mt-2">
-                <div class="progress-fill bg-indigo-500" style="width: 60%"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Done -->
-        <div class="glass-light rounded-xl p-4">
-          <h4 class="text-sm font-medium text-slate-400 mb-3"><i class="fas fa-check-circle mr-2"></i>已完成</h4>
-          <div class="space-y-2 text-sm" id="task-done">
-            <div class="text-slate-500 line-through flex items-center gap-2">
-              <i class="fas fa-check text-green-500"></i>三 Agent 設定
-            </div>
-            <div class="text-slate-500 line-through flex items-center gap-2">
-              <i class="fas fa-check text-green-500"></i>Telegram 接入
-            </div>
-            <div class="text-slate-500 line-through flex items-center gap-2">
-              <i class="fas fa-check text-green-500"></i>PWA 支援
-            </div>
-            <div class="text-slate-500 line-through flex items-center gap-2">
-              <i class="fas fa-check text-green-500"></i>專案配置化
-            </div>
-          </div>
-        </div>
       </div>
     </div>
     
@@ -653,40 +590,7 @@
     </div>
   </div>
   
-  <!-- Task Detail Modal -->
-  <div id="taskModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
-    <div class="glass rounded-2xl p-6 w-full max-w-lg">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-semibold text-white" id="taskModalTitle">任務詳情</h3>
-        <button onclick="closeTaskModal()" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="space-y-4">
-        <div>
-          <label class="text-xs text-slate-400">任務名稱</label>
-          <div class="text-white font-medium" id="taskDetailName">--</div>
-        </div>
-        <div>
-          <label class="text-xs text-slate-400">描述</label>
-          <div class="text-slate-300 text-sm" id="taskDetailDesc">--</div>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="text-xs text-slate-400">負責人</label>
-            <div class="text-white" id="taskDetailAssignee">--</div>
-          </div>
-          <div>
-            <label class="text-xs text-slate-400">狀態</label>
-            <div class="text-white" id="taskDetailStatus">--</div>
-          </div>
-        </div>
-        <div class="flex gap-2 pt-4 border-t border-slate-700">
-          <button onclick="moveTask('todo')" class="flex-1 glass px-3 py-2 rounded-lg text-sm hover-lift">移至待處理</button>
-          <button onclick="moveTask('progress')" class="flex-1 glass px-3 py-2 rounded-lg text-sm hover-lift">移至進行中</button>
-          <button onclick="moveTask('done')" class="flex-1 glass bg-green-500/20 px-3 py-2 rounded-lg text-sm hover-lift text-green-400">完成</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- Task Modal removed -->
   
   <!-- Agent Detail Modal -->
   <div id="agentModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
@@ -748,15 +652,6 @@
     let currentFilter = 'all';
     let currentTaskId = null;
     
-    // Task data (kept in localStorage for persistence)
-    const defaultTasks = {
-      'vercel-deploy': { name: 'Vercel 部署上線', desc: '完成 AQUABOT 網站部署並上線', assignee: 'Ryan', status: 'todo', priority: 'high' },
-      'backend-fix': { name: '後台功能補完', desc: '完成管理員後台產品管理功能', assignee: 'Mars', status: 'todo', priority: 'medium' },
-      'dashboard-opt': { name: 'Dashboard UI 優化', desc: '根據顧問建議改善 Dashboard 介面', assignee: 'Sarah', status: 'progress', priority: 'medium', progress: 60 }
-    };
-    const tasks = JSON.parse(localStorage.getItem('dashboard_tasks') || 'null') || defaultTasks;
-    function saveTasks() { localStorage.setItem('dashboard_tasks', JSON.stringify(tasks)); }
-    
     // Load all data from dashboard-data.json (generated at build time)
     async function loadConfig() {
       try {
@@ -770,13 +665,12 @@
         document.getElementById('projectCountFooter').textContent = projects.length;
         document.getElementById('activeCount').textContent = activeProjects.length;
         
-        // Task stats
-        const todoCount = Object.values(tasks).filter(t => t.status === 'todo').length;
-        const progressCount = Object.values(tasks).filter(t => t.status === 'progress').length;
-        const doneCount = Object.values(tasks).filter(t => t.status === 'done').length;
-        document.getElementById('pendingTasks').textContent = todoCount;
-        document.getElementById('todayDone').textContent = doneCount;
-        document.getElementById('inProgress').textContent = progressCount;
+        // Task stats removed
+        
+        // Site count
+        document.getElementById('siteCount').textContent = (dashData.sites || []).length;
+        // Cron job count
+        document.getElementById('cronJobCount').textContent = (dashData.cronJobs || []).length;
         
         // System info from snapshot
         if (dashData.system) {
@@ -800,6 +694,7 @@
           document.getElementById('openclawStatus').textContent = '運作中';
           document.getElementById('openclawAgents').textContent = oc.agentCount + ' agents';
           document.getElementById('agentCount').textContent = oc.agentCount;
+          document.getElementById('tgGroupCount').textContent = oc.telegramGroups || 0;
         }
         
         // Render agents from real data
@@ -1109,42 +1004,7 @@
       }
     }
     
-    // Task Modal
-    function openTaskDetail(taskId) {
-      currentTaskId = taskId;
-      const task = tasks[taskId];
-      if (!task) return;
-      
-      document.getElementById('taskDetailName').textContent = task.name;
-      document.getElementById('taskDetailDesc').textContent = task.desc;
-      document.getElementById('taskDetailAssignee').textContent = task.assignee;
-      document.getElementById('taskDetailStatus').textContent = task.status === 'todo' ? '待處理' : task.status === 'progress' ? '進行中' : '已完成';
-      
-      document.getElementById('taskModal').classList.remove('hidden');
-      document.getElementById('taskModal').classList.add('flex');
-    }
-    function closeTaskModal() {
-      document.getElementById('taskModal').classList.add('hidden');
-      document.getElementById('taskModal').classList.remove('flex');
-      currentTaskId = null;
-    }
-    function moveTask(status) {
-      if (currentTaskId && tasks[currentTaskId]) {
-        tasks[currentTaskId].status = status;
-        saveTasks();
-        closeTaskModal();
-        location.reload();
-      }
-    }
-    function addTask() {
-      const name = prompt('輸入任務名稱:');
-      if (name) {
-        const id = 'task-' + Date.now();
-        tasks[id] = { name: name, desc: '新任務', assignee: 'Ryan', status: 'todo', priority: 'medium' };
-        saveTasks();
-        location.reload();
-      }
-    }
+    // Task functions removed
     
     // Agent Modal - uses real data from dashData
     function openAgentDetail(agentId) {
