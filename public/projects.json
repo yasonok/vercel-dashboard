@@ -3,7 +3,7 @@
     {
       "id": "aquabot",
       "name": "Aquarium Studio",
-      "desc": "孔雀魚購物網站",
+      "desc": "孔雀魚購物網站 - Supabase + Tailwind",
       "url": "https://ryanguppy.vercel.app",
       "admin": "https://ryanguppy.vercel.app/admin",
       "status": "active",
@@ -11,19 +11,70 @@
       "github": "yasonok/ryanguppy",
       "color": "blue",
       "deps": ["supabase-js", "tailwindcss"],
-      "notes": ["aquabot", "guppy"]
+      "notes": ["aquabot", "guppy", "電商"]
     },
     {
       "id": "seo-blog",
       "name": "RYAN生活黑客",
-      "desc": "SEO 部落格",
-      "url": "https://seo-blog-lemon.vercel.app",
+      "desc": "SEO 部落格 - Next.js",
+      "url": "https://seoproject-beta.vercel.app",
       "status": "active",
-      "folder": "seo-blog",
+      "folder": "seo-blog-next",
       "github": "yasonok/seo-blog",
       "color": "green",
-      "deps": ["hexo"],
-      "notes": ["seo", "blog"]
+      "deps": ["nextjs", "vercel"],
+      "notes": ["seo", "blog", "理財"]
+    },
+    {
+      "id": "guppy-encyclopedia",
+      "name": "孔雀魚百科",
+      "desc": "孔雀魚養殖百科網站",
+      "url": "",
+      "status": "dev",
+      "folder": "guppy_encyclopedia",
+      "color": "cyan",
+      "notes": ["guppy", "encyclopedia", "養殖"]
+    },
+    {
+      "id": "guppy-genetics",
+      "name": "GuppyGenetics",
+      "desc": "孔雀魚基因遺傳研究",
+      "url": "",
+      "status": "dev",
+      "folder": "GuppyGenetics",
+      "color": "purple",
+      "notes": ["guppy", "genetics", "研究"]
+    },
+    {
+      "id": "etf-monitor",
+      "name": "ETF Monitor",
+      "desc": "ETF 價格追蹤系統",
+      "url": "",
+      "status": "dev",
+      "folder": "ETF-Monitor",
+      "color": "amber",
+      "notes": ["etf", "finance", "投資"]
+    },
+    {
+      "id": "team-collab",
+      "name": "團隊協作",
+      "desc": "多 Agent 協作系統",
+      "url": "",
+      "status": "active",
+      "folder": "team_collab",
+      "github": "yasonok/team-collab",
+      "color": "indigo",
+      "notes": ["team", "collab", "agent"]
+    },
+    {
+      "id": "dashboard",
+      "name": "Project Dashboard",
+      "desc": "專案管理監控中心",
+      "url": "https://vercel-dashboard-drab.vercel.app",
+      "status": "active",
+      "folder": "vercel-dashboard",
+      "color": "red",
+      "notes": ["dashboard", "monitor"]
     },
     {
       "id": "agent-monitor",
@@ -31,40 +82,23 @@
       "desc": "OpenClaw Agent 監控",
       "status": "dev",
       "folder": "agent-monitor",
-      "color": "purple",
-      "notes": ["agent"]
+      "color": "pink",
+      "notes": ["agent", "openclaw"]
     },
     {
-      "id": "guppy-encyclopedia",
-      "name": "孔雀魚百科",
-      "desc": "孔雀魚養殖百科",
+      "id": "aquarium-local",
+      "name": "瑞安水族網站",
+      "desc": "本地水族電商網站",
+      "url": "",
       "status": "dev",
-      "folder": "guppy_encyclopedia",
-      "color": "cyan",
-      "notes": ["guppy", "encyclopedia"]
-    },
-    {
-      "id": "etf-monitor",
-      "name": "ETF 監控",
-      "desc": "ETF 價格追蹤",
-      "status": "dev",
-      "folder": "etf-monitor",
-      "color": "amber",
-      "notes": ["etf", "finance"]
-    },
-    {
-      "id": "team-collab",
-      "name": "團隊協作",
-      "desc": "多 Agent 協作系統",
-      "status": "active",
-      "folder": "team_collab",
-      "github": "yasonok/team-collab",
-      "color": "indigo",
-      "notes": ["team", "collab"]
+      "folder": "瑞安水族網站",
+      "color": "teal",
+      "notes": ["水族", "電商"]
     }
   ],
   "local": {
     "workspace": "/Users/ryanchiang/.openclaw/workspace",
-    "ports": [3000, 5173, 8080, 18789]
+    "desktop": "/Users/ryanchiang/Desktop",
+    "ports": [3000, 5173, 8080, 18789, 3002]
   }
 }
