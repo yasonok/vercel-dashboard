@@ -744,168 +744,245 @@
 
   <script>
     let projects = [];
+    let dashData = {};
     let currentFilter = 'all';
-    let activityData = [];
     let currentTaskId = null;
-    const LOCAL_API = 'http://localhost:3002';
     
-    // Task data
-    const tasks = {
+    // Task data (kept in localStorage for persistence)
+    const defaultTasks = {
       'vercel-deploy': { name: 'Vercel 部署上線', desc: '完成 AQUABOT 網站部署並上線', assignee: 'Ryan', status: 'todo', priority: 'high' },
       'backend-fix': { name: '後台功能補完', desc: '完成管理員後台產品管理功能', assignee: 'Mars', status: 'todo', priority: 'medium' },
       'dashboard-opt': { name: 'Dashboard UI 優化', desc: '根據顧問建議改善 Dashboard 介面', assignee: 'Sarah', status: 'progress', priority: 'medium', progress: 60 }
     };
+    const tasks = JSON.parse(localStorage.getItem('dashboard_tasks') || 'null') || defaultTasks;
+    function saveTasks() { localStorage.setItem('dashboard_tasks', JSON.stringify(tasks)); }
     
-    // Agent data
-    const agents = {
-      mars: { name: 'Mars', role: 'Architect', model: 'Gemini 3 Pro', status: 'online', color: 'orange', desc: '負責系統架構與網站開發', tasks: ['後台功能補完'] },
-      sarah: { name: 'Sarah', role: 'PM', model: 'MiniMax M2.5', status: 'online', color: 'indigo', desc: '負責專案管理與協調', tasks: ['Dashboard UI 優化'] },
-      ryan: { name: 'Ryan', role: 'Lead Engineer', model: 'Claude Opus', status: 'online', color: 'emerald', desc: '負責技術決策與品質把關', tasks: ['Vercel 部署上線'] }
-    };
-    
-    // Load config
+    // Load all data from dashboard-data.json (generated at build time)
     async function loadConfig() {
       try {
-        const res = await fetch('/projects.json');
-        const config = await res.json();
-        projects = config.projects;
+        const res = await fetch('/dashboard-data.json?t=' + Date.now());
+        dashData = await res.json();
+        projects = dashData.projects || [];
         
         // Update counts
         const activeProjects = projects.filter(p => p.status === 'active');
         document.getElementById('projectCount').textContent = projects.length;
         document.getElementById('projectCountFooter').textContent = projects.length;
         document.getElementById('activeCount').textContent = activeProjects.length;
-        document.getElementById('pendingTasks').textContent = Object.values(tasks).filter(t => t.status === 'todo').length;
         
-        // Update quick stats
-        const todoTasks = Object.values(tasks).filter(t => t.status === 'todo').length;
-        const progressTasks = Object.values(tasks).filter(t => t.status === 'progress').length;
-        const doneTasks = Object.values(tasks).filter(t => t.status === 'done').length;
-        document.getElementById('todayDone').textContent = doneTasks;
-        document.getElementById('inProgress').textContent = progressTasks;
+        // Task stats
+        const todoCount = Object.values(tasks).filter(t => t.status === 'todo').length;
+        const progressCount = Object.values(tasks).filter(t => t.status === 'progress').length;
+        const doneCount = Object.values(tasks).filter(t => t.status === 'done').length;
+        document.getElementById('pendingTasks').textContent = todoCount;
+        document.getElementById('todayDone').textContent = doneCount;
+        document.getElementById('inProgress').textContent = progressCount;
         
-        renderProjects();
-        document.getElementById('configVer').textContent = 'v' + projects.length + '.1';
-        document.getElementById('versionFooter').textContent = 'v' + projects.length + '.1';
-        generateHeatmap();
-        generateProjectNotes();
-      } catch (e) {
-        console.log('Using default config', e);
-      }
-    }
-    
-    // Load local system data
-    async function loadLocalData() {
-      try {
-        const res = await fetch(LOCAL_API + '/api/dashboard', { timeout: 3000 });
-        const data = await res.json();
-        
-        // Update global status
-        document.getElementById('globalStatus').className = 'status-dot status-online';
-        document.getElementById('systemStatus').textContent = '系統正常';
-        
-        // CPU
-        if (data.system?.cpu) {
-          const cpu = data.system.cpu.load;
-          document.getElementById('cpuDisplay').textContent = cpu + '%';
-          document.getElementById('cpuBar').style.width = cpu + '%';
+        // System info from snapshot
+        if (dashData.system) {
+          const sys = dashData.system;
+          const cpu = parseFloat(sys.cpu) || 0;
+          const mem = parseFloat(sys.memoryPercent) || 0;
+          document.getElementById('cpuDisplay').textContent = sys.cpu + '%';
+          document.getElementById('cpuBar').style.width = sys.cpu + '%';
           document.getElementById('cpuBar').className = cpu > 80 ? 'progress-fill bg-red-500' : cpu > 50 ? 'progress-fill bg-yellow-500' : 'progress-fill bg-green-500';
-        }
-        
-        // Memory
-        if (data.system?.memory) {
-          const mem = data.system.memory.percent;
-          document.getElementById('memDisplay').textContent = mem + '%';
-          document.getElementById('memBar').style.width = mem + '%';
+          document.getElementById('memDisplay').textContent = sys.memoryPercent + '%';
+          document.getElementById('memBar').style.width = sys.memoryPercent + '%';
           document.getElementById('memBar').className = mem > 80 ? 'progress-fill bg-red-500' : 'progress-fill bg-blue-500';
+          document.getElementById('globalStatus').className = 'status-dot status-online';
+          document.getElementById('systemStatus').textContent = sys.hostname || '系統正常';
         }
         
-        // OpenClaw
-        if (data.openclaw) {
-          const oc = data.openclaw;
-          if (oc.status === 'online') {
-            document.getElementById('openclawStatusDot').className = 'status-dot status-online';
-            document.getElementById('openclawStatus').textContent = '運作中';
-            document.getElementById('openclawAgents').textContent = (oc.agents?.length || 0) + ' agents';
-          } else {
-            document.getElementById('openclawStatusDot').className = 'status-dot status-offline';
-            document.getElementById('openclawStatus').textContent = '離線';
-          }
+        // OpenClaw info
+        if (dashData.openclaw) {
+          const oc = dashData.openclaw;
+          document.getElementById('openclawStatusDot').className = 'status-dot status-online';
+          document.getElementById('openclawStatus').textContent = '運作中';
+          document.getElementById('openclawAgents').textContent = oc.agentCount + ' agents';
+          document.getElementById('agentCount').textContent = oc.agentCount;
         }
+        
+        // Render agents from real data
+        if (dashData.agents && dashData.agents.length) {
+          renderAgents(dashData.agents);
+        }
+        
+        // Render cron jobs from real data
+        if (dashData.cronJobs && dashData.cronJobs.length) {
+          renderCronJobs(dashData.cronJobs);
+        }
+        
+        // Render sites with real check
+        if (dashData.sites && dashData.sites.length) {
+          renderSites(dashData.sites);
+        }
+
+        // Data freshness
+        if (dashData.generatedAt) {
+          const genDate = new Date(dashData.generatedAt);
+          document.getElementById('lastUpdate').textContent = genDate.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
+        }
+
+        // Version
+        const ver = 'v2.0';
+        document.getElementById('configVer').textContent = ver;
+        document.getElementById('versionFooter').textContent = ver;
+        
+        // Week active hours (from cron jobs count * estimated)
+        const cronCount = (dashData.cronJobs || []).filter(j => j.enabled).length;
+        document.getElementById('weekActive').textContent = cronCount * 3;
+        
+        // Quality: based on error rate
+        const errorJobs = (dashData.cronJobs || []).filter(j => j.consecutiveErrors > 0).length;
+        const totalJobs = (dashData.cronJobs || []).length || 1;
+        const quality = Math.round(100 - (errorJobs / totalJobs * 30));
+        document.getElementById('qualityScore').textContent = quality;
         
       } catch (e) {
-        document.getElementById('globalStatus').className = 'status-dot status-offline';
-        document.getElementById('systemStatus').textContent = '系統離線';
-        document.getElementById('cpuDisplay').textContent = '--';
-        document.getElementById('memDisplay').textContent = '--';
-        document.getElementById('openclawStatus').textContent = '未連線';
+        console.error('Failed to load dashboard data:', e);
       }
     }
     
-    // Generate activity heatmap
-    function generateHeatmap() {
-      const container = document.getElementById('activityHeatmap');
+    // Render agents dynamically from dashboard-data.json
+    function renderAgents(agentsList) {
+      const container = document.querySelector('.grid.md\\:grid-cols-3.gap-4.mb-6');
       if (!container) return;
-      const days = 14;
-      let html = '<div class="text-xs text-slate-400 mr-2">';
-      for (let i = days - 1; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const level = Math.floor(Math.random() * 5);
-        html += `<div class="heatmap-cell heatmap-l${level}" title="${date.toLocaleDateString('zh-TW')}"></div>`;
-      }
-      html += '</div>';
-      container.innerHTML = html;
-    }
-    
-    // Generate project notes summary
-    function generateProjectNotes() {
-      const container = document.getElementById('projectNotes');
-      if (!container) return;
-      const activeProjects = projects.filter(p => p.status === 'active').slice(0, 3);
       
-      container.innerHTML = activeProjects.map(p => `
-        <div class="glass-light rounded-xl p-3 hover-lift cursor-pointer" onclick="openProject('${p.url || '#'}')">
-          <div class="flex items-center justify-between mb-2">
-            <span class="font-medium text-white">${p.name}</span>
-            <span class="text-xs text-slate-400">${p.notes ? p.notes.length : 0} 筆記關鍵字</span>
-          </div>
-          <div class="flex gap-1 flex-wrap">
-            ${(p.notes || []).map(n => `<span class="dep-badge dep-ok">#${n}</span>`).join('')}
-          </div>
-        </div>
-      `).join('') || '<div class="text-slate-400 text-sm">無筆記資料</div>';
-    }
-    
-    // Render projects
-    function renderProjects() {
-      const grid = document.getElementById('projectsGrid');
-      if (!grid) return;
-      const filtered = currentFilter === 'all' ? projects : projects.filter(p => p.status === currentFilter);
+      const roleMap = {
+        'sarah_agent': { role: 'PM', color: 'from-indigo-400 to-blue-500', desc: '負責專案管理與協調' },
+        'mars_agent': { role: 'Architect', color: 'from-orange-400 to-amber-500', desc: '負責系統架構與網站開發' },
+        'ryan_agent': { role: 'Lead Engineer', color: 'from-emerald-400 to-teal-500', desc: '負責技術決策與品質把關' }
+      };
       
-      grid.innerHTML = filtered.map(p => {
-        const colors = { 
-          blue: 'from-blue-400 to-cyan-500', green: 'from-green-400 to-emerald-500', 
-          purple: 'from-purple-400 to-pink-500', cyan: 'from-cyan-400 to-blue-500', 
-          amber: 'from-amber-400 to-orange-500', indigo: 'from-indigo-400 to-purple-500' 
-        };
-        const statusClass = p.status === 'active' ? 'status-online' : 'status-dev';
-        const depsBadges = (p.deps || []).map(d => `<span class="dep-badge dep-ok">${d}</span>`).join('');
-        
+      container.innerHTML = agentsList.map(a => {
+        const info = roleMap[a.id] || { role: 'Agent', color: 'from-gray-400 to-gray-500', desc: '' };
         return `
-          <div class="glass rounded-xl p-4 hover-lift cursor-pointer project-card" data-status="${p.status}" onclick="openProject('${p.url || '#'}')">
-            <div class="flex items-center justify-between mb-3">
-              <div class="w-10 h-10 rounded-lg bg-gradient-to-br ${colors[p.color] || 'from-gray-400 to-gray-500'} flex items-center justify-center text-white text-lg">${getEmoji(p.name)}</div>
-              <span class="status-dot ${statusClass}"></span>
+          <div class="glass rounded-xl p-5 animate-fade-in animate-delay-3 card-clickable" onclick="openAgentDetail('${a.id}')">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br ${info.color} flex items-center justify-center text-white font-bold">${a.name[0]}</div>
+                <div>
+                  <h3 class="font-semibold text-white">${a.name}</h3>
+                  <p class="text-xs text-slate-400">${info.role}</p>
+                </div>
+              </div>
+              <span class="status-dot status-online"></span>
             </div>
-            <div class="font-medium text-white mb-1">${p.name}</div>
-            <div class="text-xs text-slate-400 mb-2">${p.desc}</div>
-            <div class="flex gap-1 flex-wrap mb-2">${depsBadges}</div>
-            ${p.github ? `<div class="text-xs text-slate-500 cursor-pointer hover:text-indigo-400" onclick="event.stopPropagation(); window.open('https://github.com/${p.github}', '_blank')">🐙 ${p.github}</div>` : ''}
-            ${p.admin ? `<div class="text-xs text-indigo-400 mt-1 cursor-pointer hover:text-white" onclick="event.stopPropagation(); window.open('${p.admin}', '_blank')">⚙️ 管理後台</div>` : ''}
+            <div class="text-xs text-slate-400">${a.model}</div>
+            <div class="mt-2 text-xs text-indigo-400"><i class="fas fa-external-link-alt mr-1"></i>點擊查看詳情</div>
           </div>
         `;
       }).join('');
+    }
+    
+    // Render cron jobs dynamically
+    function renderCronJobs(jobs) {
+      const container = document.getElementById('scheduledJobs');
+      if (!container) return;
+      
+      // Update count in header
+      const header = container.closest('.glass')?.querySelector('h3');
+      if (header) header.innerHTML = `<i class="fas fa-clock text-indigo-400 mr-2"></i>排程任務 (${jobs.length})`;
+      
+      const colorCycle = [
+        'from-cyan-400 to-blue-500', 'from-indigo-400 to-purple-500',
+        'from-green-400 to-emerald-500', 'from-amber-400 to-orange-500',
+        'from-purple-400 to-pink-500', 'from-red-400 to-pink-500'
+      ];
+      const emojiMap = { 'main': '🔧', 'sarah_agent': 'S', 'mars_agent': 'M', 'ryan_agent': 'R' };
+      
+      container.innerHTML = jobs.map((job, i) => {
+        const statusClass = job.lastStatus === 'ok' ? 'status-online' : job.lastStatus === 'error' ? 'status-offline' : 'status-checking';
+        const statusText = job.lastStatus === 'ok' ? '✅' : job.lastStatus === 'error' ? '❌ 錯誤' : '⏳';
+        const scheduleText = formatSchedule(job.schedule);
+        const nextText = job.nextRunAt ? formatRelativeTime(new Date(job.nextRunAt)) : '--';
+        
+        return `
+          <div class="glass-light rounded-xl p-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br ${colorCycle[i % colorCycle.length]} flex items-center justify-center text-white text-sm font-bold">${emojiMap[job.agentId] || '⚡'}</div>
+                <div>
+                  <div class="font-medium text-white">${job.name}</div>
+                  <div class="text-xs text-slate-400">${scheduleText} • ${job.agentId}${!job.enabled ? ' • <span class="text-red-400">已停用</span>' : ''}</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <span class="status-dot ${statusClass}"></span>
+                <div class="text-xs ${job.lastStatus === 'error' ? 'text-red-400' : 'text-green-400'} mt-1">下次: ${nextText}</div>
+                ${job.consecutiveErrors > 0 ? `<div class="text-xs text-red-400">連續錯誤: ${job.consecutiveErrors}</div>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    function formatSchedule(schedule) {
+      if (!schedule) return '--';
+      if (schedule.kind === 'cron') return `cron: ${schedule.expr}${schedule.tz ? ' (' + schedule.tz + ')' : ''}`;
+      if (schedule.kind === 'every') {
+        const hours = schedule.everyMs / 3600000;
+        return hours >= 1 ? `每 ${hours} 小時` : `每 ${schedule.everyMs / 60000} 分鐘`;
+      }
+      if (schedule.kind === 'at') return `一次性: ${new Date(schedule.at).toLocaleString('zh-TW')}`;
+      return '--';
+    }
+    
+    function formatRelativeTime(date) {
+      const now = new Date();
+      const diff = date - now;
+      if (diff < 0) return '已過期';
+      const hours = Math.floor(diff / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      if (hours > 24) return date.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' }) + ' ' + date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Taipei' });
+      if (hours > 0) return `${hours}h ${mins}m`;
+      return `${mins}m`;
+    }
+    
+    // Real site status check
+    function renderSites(sites) {
+      const container = document.getElementById('siteStatus');
+      if (!container) return;
+      
+      // Add dashboard itself
+      const allSites = [...sites];
+      if (!allSites.find(s => s.url?.includes('vercel-dashboard-omega'))) {
+        allSites.push({ name: 'Dashboard', url: 'https://vercel-dashboard-omega.vercel.app', status: 'active' });
+      }
+      
+      container.innerHTML = allSites.map((site, i) => `
+        <div class="glass-light rounded-xl p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium text-white">${site.name}</span>
+            <span class="status-dot status-checking" id="site-status-${i}"></span>
+          </div>
+          <div class="text-xs text-slate-400" id="site-label-${i}">檢查中...</div>
+        </div>
+      `).join('');
+      
+      // Actually check each site
+      allSites.forEach((site, i) => {
+        if (!site.url) {
+          document.getElementById('site-status-' + i).className = 'status-dot status-dev';
+          document.getElementById('site-label-' + i).textContent = '🔧 開發中';
+          return;
+        }
+        
+        const start = Date.now();
+        fetch(site.url, { method: 'HEAD', mode: 'no-cors' })
+          .then(() => {
+            const ms = Date.now() - start;
+            document.getElementById('site-status-' + i).className = 'status-dot status-online';
+            document.getElementById('site-label-' + i).textContent = `🟢 線上 (${ms}ms)`;
+            document.getElementById('site-label-' + i).className = 'text-xs text-green-400';
+          })
+          .catch(() => {
+            document.getElementById('site-status-' + i).className = 'status-dot status-offline';
+            document.getElementById('site-label-' + i).textContent = '🔴 離線';
+            document.getElementById('site-label-' + i).className = 'text-xs text-red-400';
+          });
+      });
     }
     
     function getEmoji(name) {
@@ -1010,35 +1087,8 @@
     updateCrypto();
     setInterval(() => { updateWeather(); updateCrypto(); }, 60000);
     
-    // Website Status Check
-    async function checkAllStatus() {
-      const sites = [
-        { id: 'aquabot', name: 'Aquarium Studio', url: 'https://ryanguppy.vercel.app', status: 'unknown' },
-        { id: 'seo', name: 'RYAN生活黑客', url: 'https://seoproject-beta.vercel.app', status: 'unknown' },
-        { id: 'dashboard', name: 'Dashboard', url: 'https://vercel-dashboard-drab.vercel.app', status: 'unknown' }
-      ];
-      
-      const container = document.getElementById('siteStatus');
-      container.innerHTML = sites.map(site => `
-        <div class="glass-light rounded-xl p-3">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-medium text-white">${site.name}</span>
-            <span class="status-dot status-checking" id="status-${site.id}"></span>
-          </div>
-          <div class="text-xs text-slate-400">檢查中...</div>
-        </div>
-      `).join('');
-      
-      // Simulate status check (actual check requires server-side)
-      for (const site of sites) {
-        const el = document.getElementById('status-' + site.id);
-        // For demo, randomly assign status
-        el.className = 'status-dot status-online';
-        el.parentElement.querySelector('.text-slate-400').textContent = '🟢 線上';
-      }
-    }
-    checkAllStatus();
-    setInterval(checkAllStatus, 30000);
+    // Website status check is now handled by renderSites() in loadConfig
+    function checkAllStatus() { /* handled by renderSites */ }
     
     // Command Palette
     function openCommandPalette() { 
@@ -1081,7 +1131,7 @@
     function moveTask(status) {
       if (currentTaskId && tasks[currentTaskId]) {
         tasks[currentTaskId].status = status;
-        alert('✅ 任務已移至 ' + (status === 'todo' ? '待處理' : status === 'progress' ? '進行中' : '已完成'));
+        saveTasks();
         closeTaskModal();
         location.reload();
       }
@@ -1091,26 +1141,34 @@
       if (name) {
         const id = 'task-' + Date.now();
         tasks[id] = { name: name, desc: '新任務', assignee: 'Ryan', status: 'todo', priority: 'medium' };
-        alert('✅ 任務已新增: ' + name);
+        saveTasks();
         location.reload();
       }
     }
     
-    // Agent Modal
+    // Agent Modal - uses real data from dashData
     function openAgentDetail(agentId) {
-      const agent = agents[agentId];
+      const agent = (dashData.agents || []).find(a => a.id === agentId);
       if (!agent) return;
       
-      document.getElementById('agentModalTitle').textContent = agent.name + ' - ' + agent.role;
+      const roleMap = {
+        'sarah_agent': { role: 'PM', color: 'from-indigo-400 to-blue-500', desc: '負責專案管理與協調' },
+        'mars_agent': { role: 'Architect', color: 'from-orange-400 to-amber-500', desc: '負責系統架構與網站開發' },
+        'ryan_agent': { role: 'Lead Engineer', color: 'from-emerald-400 to-teal-500', desc: '負責技術決策與品質把關' }
+      };
+      const info = roleMap[agentId] || { role: 'Agent', color: 'from-gray-400 to-gray-500', desc: agent.role };
       
-      const colorMap = { orange: 'from-orange-400 to-amber-500', indigo: 'from-indigo-400 to-blue-500', emerald: 'from-emerald-400 to-teal-500' };
+      // Find cron jobs assigned to this agent
+      const agentJobs = (dashData.cronJobs || []).filter(j => j.agentId === agentId);
+      
+      document.getElementById('agentModalTitle').textContent = agent.name + ' - ' + info.role;
       
       document.getElementById('agentModalContent').innerHTML = `
         <div class="flex items-center gap-4">
-          <div class="w-16 h-16 rounded-full bg-gradient-to-br ${colorMap[agent.color]} flex items-center justify-center text-white text-2xl font-bold">${agent.name[0]}</div>
+          <div class="w-16 h-16 rounded-full bg-gradient-to-br ${info.color} flex items-center justify-center text-white text-2xl font-bold">${agent.name[0]}</div>
           <div>
             <div class="text-xl font-semibold text-white">${agent.name}</div>
-            <div class="text-sm text-slate-400">${agent.role}</div>
+            <div class="text-sm text-slate-400">${info.role}</div>
             <div class="flex items-center gap-2 mt-1">
               <span class="status-dot status-online"></span>
               <span class="text-sm text-green-400">Online</span>
@@ -1123,19 +1181,21 @@
         </div>
         <div class="glass-light rounded-xl p-4">
           <div class="text-xs text-slate-400 mb-1">職責</div>
-          <div class="text-white">${agent.desc}</div>
+          <div class="text-white">${info.desc}</div>
         </div>
+        ${agentJobs.length ? `
         <div class="glass-light rounded-xl p-4">
-          <div class="text-xs text-slate-400 mb-2">負責任務</div>
-          <div class="flex gap-2 flex-wrap">
-            ${agent.tasks.map(t => `<span class="dep-badge dep-ok">${t}</span>`).join('')}
+          <div class="text-xs text-slate-400 mb-2">排程任務 (${agentJobs.length})</div>
+          <div class="space-y-1">
+            ${agentJobs.map(j => `
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-white">${j.name}</span>
+                <span class="text-xs ${j.lastStatus === 'ok' ? 'text-green-400' : 'text-red-400'}">${j.lastStatus === 'ok' ? '✅' : '❌'}</span>
+              </div>
+            `).join('')}
           </div>
         </div>
-        <div class="flex gap-2 pt-4 border-t border-slate-700">
-          <button onclick="quickCommand('${agentId}')" class="flex-1 glass bg-indigo-500/30 px-4 py-2 rounded-xl text-white font-medium hover-lift">
-            <i class="fas fa-paper-plane mr-2"></i>發送訊息
-          </button>
-        </div>
+        ` : ''}
       `;
       
       document.getElementById('agentModal').classList.remove('hidden');
@@ -1180,17 +1240,7 @@
       closeFeedback();
     }
     
-    // Update notification
-    function showUpdateNotification() {
-      // Simulate update check - in real app, check from server
-      const currentVersion = 'v1.1';
-      const latestVersion = localStorage.getItem('dashboard_version') || currentVersion;
-      
-      // Show notification if there's a new version
-      if (Math.random() > 0.7) { // 30% chance to show for demo
-        document.getElementById('updateToast').classList.remove('hidden');
-      }
-    }
+    // Update notification - disabled (no random)
     function dismissUpdate() {
       document.getElementById('updateToast').classList.add('hidden');
     }
@@ -1202,44 +1252,16 @@
       return false;
     };
     
-    // Check for updates on load
-    setTimeout(showUpdateNotification, 5000);
+    // No random update check
     
     // Refresh all
     function refreshAll() {
       location.reload();
     }
     
-    // Refresh jobs
+    // Refresh jobs - reload from data
     function refreshJobs() {
-      const jobs = [
-        { name: 'Guppy Encyclopedia Progress Report', agent: 'M', color: 'from-orange-400 to-amber-500', schedule: '每小時', next: '每小時執行', agentId: 'mars_agent', status: 'ok' },
-        { name: '每日 Agent 清理', agent: '🔧', color: 'from-cyan-400 to-blue-500', schedule: '每日 03:00', next: '03:00', agentId: 'main', status: 'ok' },
-        { name: 'SEO Daily Automation', agent: 'S', color: 'from-indigo-400 to-blue-500', schedule: '每日 06:00', next: '06:00', agentId: 'sarah_agent', status: 'ok' },
-        { name: '每日 Agent 進度報告', agent: 'R', color: 'from-emerald-400 to-teal-500', schedule: '每日 08:00', next: '08:00', agentId: 'main', status: 'ok' },
-        { name: 'Telegram Group Summary', agent: 'T', color: 'from-purple-400 to-pink-500', schedule: '每日 09:00', next: '09:00', agentId: 'ryan_agent', status: 'ok' }
-      ];
-      
-      const container = document.getElementById('scheduledJobs');
-      container.innerHTML = jobs.map(job => `
-        <div class="glass-light rounded-xl p-4 hover-lift cursor-pointer">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-gradient-to-br ${job.color} flex items-center justify-center text-white text-sm font-bold">${job.agent}</div>
-              <div>
-                <div class="font-medium text-white">${job.name}</div>
-                <div class="text-xs text-slate-400">${job.schedule}</div>
-              </div>
-            </div>
-            <div class="text-right">
-              <span class="status-dot status-online"></span>
-              <div class="text-xs text-slate-400 mt-1">下次: ${job.next}</div>
-            </div>
-          </div>
-        </div>
-      `).join('');
-      
-      alert('✅ 排程任務已更新');
+      if (dashData.cronJobs) renderCronJobs(dashData.cronJobs);
     }
     
     // Utils
@@ -1251,8 +1273,6 @@
     
     // Init
     loadConfig();
-    loadLocalData();
-    setInterval(loadLocalData, 10000);
   </script>
 </body>
 </html>

@@ -1,0 +1,296 @@
+{
+  "generatedAt": "2026-02-19T05:53:32.573Z",
+  "agents": [
+    {
+      "id": "sarah_agent",
+      "name": "Sarah",
+      "model": "MiniMax M2.5",
+      "role": "Sarah。妳是 Project Manager (PM)，由 MiniMax M2.5 驅動。",
+      "provider": "minimax"
+    },
+    {
+      "id": "mars_agent",
+      "name": "Mars",
+      "model": "Gemini 3 Pro",
+      "role": "Mars。妳是 Architect (架構師)，由 Gemini 3 Pro 驅動。",
+      "provider": "ag_manager"
+    },
+    {
+      "id": "ryan_agent",
+      "name": "Ryan",
+      "model": "Claude Opus Thinking",
+      "role": "Ryan。你是 Lead Engineer (首席工程師)，由 Claude Thinking 驅動。",
+      "provider": "ag_manager"
+    }
+  ],
+  "cronJobs": [
+    {
+      "id": "245fa2fc-74b0-49f4-a32d-504583cae004",
+      "name": "OpenClaw Gateway Restart",
+      "enabled": true,
+      "agentId": "sarah_agent",
+      "sessionTarget": "main",
+      "schedule": {
+        "kind": "every",
+        "everyMs": 18000000
+      },
+      "lastStatus": "ok",
+      "lastRunAt": "2026-02-19T04:42:00.220Z",
+      "nextRunAt": "2026-02-19T09:42:00.927Z",
+      "consecutiveErrors": 0
+    },
+    {
+      "id": "8d0e199f-dd13-43be-9278-0c0f716819ed",
+      "name": "每日 Agent 清理",
+      "enabled": true,
+      "agentId": "main",
+      "sessionTarget": "main",
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 3 * * *",
+        "tz": "Asia/Taipei"
+      },
+      "lastStatus": "ok",
+      "lastRunAt": "2026-02-18T19:00:00.369Z",
+      "nextRunAt": "2026-02-19T19:00:00.000Z",
+      "consecutiveErrors": 0
+    },
+    {
+      "id": "1456a493-5384-4a86-8d0f-400a02c1dded",
+      "name": "SEO Daily Automation",
+      "enabled": true,
+      "agentId": "sarah_agent",
+      "sessionTarget": "isolated",
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 6 * * *",
+        "tz": "Asia/Taipei"
+      },
+      "lastStatus": "ok",
+      "lastRunAt": "2026-02-18T22:00:00.011Z",
+      "nextRunAt": "2026-02-19T22:00:00.000Z",
+      "consecutiveErrors": 0
+    },
+    {
+      "id": "fdcae8d6-c981-414f-a7a9-d8505d564aee",
+      "name": "每日 Agent 進度報告",
+      "enabled": true,
+      "agentId": "main",
+      "sessionTarget": "isolated",
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 8 * * *",
+        "tz": "Asia/Taipei"
+      },
+      "lastStatus": "error",
+      "lastRunAt": "2026-02-19T00:00:00.010Z",
+      "nextRunAt": "2026-02-20T00:00:00.000Z",
+      "consecutiveErrors": 1
+    },
+    {
+      "id": "55f8bdcf-02c2-431c-87a1-649749fb87b6",
+      "name": "Daily Telegram Group Summary",
+      "enabled": true,
+      "agentId": "ryan_agent",
+      "sessionTarget": "isolated",
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 * * *",
+        "tz": "Asia/Taipei"
+      },
+      "lastStatus": "ok",
+      "lastRunAt": "2026-02-19T01:00:00.010Z",
+      "nextRunAt": "2026-02-20T01:00:00.000Z",
+      "consecutiveErrors": 0
+    },
+    {
+      "id": "ece55421-5cc0-4806-bc6d-93669c73ef72",
+      "name": "SEO每日文章更新",
+      "enabled": true,
+      "agentId": "ryan_agent",
+      "sessionTarget": "isolated",
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 * * *",
+        "tz": "Asia/Taipei"
+      },
+      "lastStatus": "ok",
+      "lastRunAt": "2026-02-19T01:08:29.487Z",
+      "nextRunAt": "2026-02-20T01:00:00.000Z",
+      "consecutiveErrors": 0
+    }
+  ],
+  "projects": [
+    {
+      "id": "aquabot",
+      "name": "Aquarium Studio",
+      "desc": "孔雀魚購物網站 - Supabase + Tailwind",
+      "url": "https://ryanguppy.vercel.app",
+      "admin": "https://ryanguppy.vercel.app/admin",
+      "status": "active",
+      "folder": "project_shared",
+      "github": "yasonok/ryanguppy",
+      "color": "blue",
+      "deps": [
+        "supabase-js",
+        "tailwindcss"
+      ],
+      "notes": [
+        "aquabot",
+        "guppy",
+        "電商"
+      ]
+    },
+    {
+      "id": "seo-blog",
+      "name": "RYAN生活黑客",
+      "desc": "SEO 部落格 - Next.js",
+      "url": "https://seoproject-beta.vercel.app",
+      "status": "active",
+      "folder": "seo-blog-next",
+      "github": "yasonok/seo-blog",
+      "color": "green",
+      "deps": [
+        "nextjs",
+        "vercel"
+      ],
+      "notes": [
+        "seo",
+        "blog",
+        "理財"
+      ]
+    },
+    {
+      "id": "guppy-encyclopedia",
+      "name": "孔雀魚百科",
+      "desc": "孔雀魚養殖百科網站",
+      "url": "",
+      "status": "dev",
+      "folder": "guppy_encyclopedia",
+      "color": "cyan",
+      "notes": [
+        "guppy",
+        "encyclopedia",
+        "養殖"
+      ]
+    },
+    {
+      "id": "guppy-genetics",
+      "name": "GuppyGenetics",
+      "desc": "孔雀魚基因遺傳研究",
+      "url": "",
+      "status": "dev",
+      "folder": "GuppyGenetics",
+      "color": "purple",
+      "notes": [
+        "guppy",
+        "genetics",
+        "研究"
+      ]
+    },
+    {
+      "id": "etf-monitor",
+      "name": "ETF Monitor",
+      "desc": "ETF 價格追蹤系統",
+      "url": "",
+      "status": "dev",
+      "folder": "ETF-Monitor",
+      "color": "amber",
+      "notes": [
+        "etf",
+        "finance",
+        "投資"
+      ]
+    },
+    {
+      "id": "team-collab",
+      "name": "團隊協作",
+      "desc": "多 Agent 協作系統",
+      "url": "",
+      "status": "active",
+      "folder": "team_collab",
+      "github": "yasonok/team-collab",
+      "color": "indigo",
+      "notes": [
+        "team",
+        "collab",
+        "agent"
+      ]
+    },
+    {
+      "id": "dashboard",
+      "name": "Project Dashboard",
+      "desc": "專案管理監控中心",
+      "url": "https://vercel-dashboard-drab.vercel.app",
+      "status": "active",
+      "folder": "vercel-dashboard",
+      "color": "red",
+      "notes": [
+        "dashboard",
+        "monitor"
+      ]
+    },
+    {
+      "id": "agent-monitor",
+      "name": "Agent Monitor",
+      "desc": "OpenClaw Agent 監控",
+      "status": "dev",
+      "folder": "agent-monitor",
+      "color": "pink",
+      "notes": [
+        "agent",
+        "openclaw"
+      ]
+    },
+    {
+      "id": "aquarium-local",
+      "name": "瑞安水族網站",
+      "desc": "本地水族電商網站",
+      "url": "",
+      "status": "dev",
+      "folder": "瑞安水族網站",
+      "color": "teal",
+      "notes": [
+        "水族",
+        "電商"
+      ]
+    }
+  ],
+  "sites": [
+    {
+      "name": "Aquarium Studio",
+      "url": "https://ryanguppy.vercel.app",
+      "status": "active"
+    },
+    {
+      "name": "RYAN生活黑客",
+      "url": "https://seoproject-beta.vercel.app",
+      "status": "active"
+    },
+    {
+      "name": "Project Dashboard",
+      "url": "https://vercel-dashboard-drab.vercel.app",
+      "status": "active"
+    }
+  ],
+  "system": {
+    "cpu": "7.8",
+    "memoryUsedGB": "7.7",
+    "memoryTotalGB": "8.0",
+    "memoryPercent": "96.5",
+    "os": "macOS 15.7.3",
+    "hostname": "Ryans-MacBook-Pro.local",
+    "platform": "darwin"
+  },
+  "openclaw": {
+    "port": 18789,
+    "mode": "local",
+    "timezone": "Asia/Taipei",
+    "nodeVersion": "v25.5.0",
+    "agentCount": 3,
+    "channels": [
+      "telegram"
+    ],
+    "telegramGroups": 7
+  }
+}

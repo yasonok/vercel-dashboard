@@ -1,0 +1,74 @@
+[
+  {
+    "id": "245fa2fc-74b0-49f4-a32d-504583cae004",
+    "name": "OpenClaw Gateway Restart",
+    "enabled": true,
+    "agentId": "sarah_agent",
+    "sessionTarget": "main",
+    "schedule": { "kind": "every", "everyMs": 18000000 },
+    "lastStatus": "ok",
+    "lastRunAt": "2026-02-19T04:42:00.220Z",
+    "nextRunAt": "2026-02-19T09:42:00.927Z",
+    "consecutiveErrors": 0
+  },
+  {
+    "id": "8d0e199f-dd13-43be-9278-0c0f716819ed",
+    "name": "每日 Agent 清理",
+    "enabled": true,
+    "agentId": "main",
+    "sessionTarget": "main",
+    "schedule": { "kind": "cron", "expr": "0 3 * * *", "tz": "Asia/Taipei" },
+    "lastStatus": "ok",
+    "lastRunAt": "2026-02-18T19:00:00.369Z",
+    "nextRunAt": "2026-02-19T19:00:00.000Z",
+    "consecutiveErrors": 0
+  },
+  {
+    "id": "1456a493-5384-4a86-8d0f-400a02c1dded",
+    "name": "SEO Daily Automation",
+    "enabled": true,
+    "agentId": "sarah_agent",
+    "sessionTarget": "isolated",
+    "schedule": { "kind": "cron", "expr": "0 6 * * *", "tz": "Asia/Taipei" },
+    "lastStatus": "ok",
+    "lastRunAt": "2026-02-18T22:00:00.011Z",
+    "nextRunAt": "2026-02-19T22:00:00.000Z",
+    "consecutiveErrors": 0
+  },
+  {
+    "id": "fdcae8d6-c981-414f-a7a9-d8505d564aee",
+    "name": "每日 Agent 進度報告",
+    "enabled": true,
+    "agentId": "main",
+    "sessionTarget": "isolated",
+    "schedule": { "kind": "cron", "expr": "0 8 * * *", "tz": "Asia/Taipei" },
+    "lastStatus": "error",
+    "lastRunAt": "2026-02-19T00:00:00.010Z",
+    "nextRunAt": "2026-02-20T00:00:00.000Z",
+    "consecutiveErrors": 1
+  },
+  {
+    "id": "55f8bdcf-02c2-431c-87a1-649749fb87b6",
+    "name": "Daily Telegram Group Summary",
+    "enabled": true,
+    "agentId": "ryan_agent",
+    "sessionTarget": "isolated",
+    "schedule": { "kind": "cron", "expr": "0 9 * * *", "tz": "Asia/Taipei" },
+    "lastStatus": "ok",
+    "lastRunAt": "2026-02-19T01:00:00.010Z",
+    "nextRunAt": "2026-02-20T01:00:00.000Z",
+    "consecutiveErrors": 0
+  },
+  {
+    "id": "ece55421-5cc0-4806-bc6d-93669c73ef72",
+    "name": "SEO每日文章更新",
+    "enabled": true,
+    "agentId": "ryan_agent",
+    "sessionTarget": "isolated",
+    "schedule": { "kind": "cron", "expr": "0 9 * * *", "tz": "Asia/Taipei" },
+    "lastStatus": "ok",
+    "lastRunAt": "2026-02-19T01:08:29.487Z",
+    "nextRunAt": "2026-02-20T01:00:00.000Z",
+    "consecutiveErrors": 0
+  }
+]
