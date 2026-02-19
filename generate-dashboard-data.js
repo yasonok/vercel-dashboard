@@ -106,6 +106,25 @@ async function generateData() {
     console.error('System info unavailable:', e.message);
   }
 
+  // 5. Gemini API usage
+  try {
+    const usagePath = path.join(process.env.HOME, '.openclaw/workspace/seo-blog-next/scripts/gemini-usage.json');
+    if (fs.existsSync(usagePath)) {
+      const usageRaw = fs.readFileSync(usagePath, 'utf8');
+      const usageData = JSON.parse(usageRaw);
+      const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
+      data.geminiUsage = {
+        today: usageData.daily?.[today] || { total_requests: 0, image_requests: 0, text_requests: 0, errors: 0 },
+        limits: { rpd: 500, image_rpd: 50, rpm: 15 },
+        history: Object.fromEntries(
+          Object.entries(usageData.daily || {}).sort().slice(-7)
+        )
+      };
+    }
+  } catch (e) {
+    console.error('Failed to read Gemini usage:', e.message);
+  }
+
   // Write output
   const outPath = path.join(__dirname, 'public/dashboard-data.json');
   fs.writeFileSync(outPath, JSON.stringify(data, null, 2));

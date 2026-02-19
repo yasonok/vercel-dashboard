@@ -270,6 +270,61 @@
       </div>
     </div>
     
+    <!-- Gemini API Usage Monitor -->
+    <div class="glass rounded-2xl p-5 mb-6 animate-fade-in animate-delay-2">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white"><i class="fas fa-chart-bar text-emerald-400 mr-2"></i>Gemini API 用量監控</h3>
+        <span class="text-xs text-slate-400" id="geminiDate">-</span>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <!-- 總請求 -->
+        <div class="glass-light rounded-xl p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-slate-400">📤 總請求數</span>
+            <span class="text-xs font-mono" id="geminiRpdStatus">-</span>
+          </div>
+          <div class="text-xl font-bold text-white"><span id="geminiRpd">0</span> <span class="text-xs text-slate-500">/ <span id="geminiRpdLimit">500</span></span></div>
+          <div class="w-full bg-slate-700 rounded-full h-1.5 mt-2">
+            <div class="bg-emerald-400 h-1.5 rounded-full transition-all" id="geminiRpdBar" style="width: 0%"></div>
+          </div>
+        </div>
+        <!-- 圖片生成 -->
+        <div class="glass-light rounded-xl p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-slate-400">🖼️ 圖片生成</span>
+            <span class="text-xs font-mono" id="geminiImgStatus">-</span>
+          </div>
+          <div class="text-xl font-bold text-white"><span id="geminiImg">0</span> <span class="text-xs text-slate-500">/ <span id="geminiImgLimit">50</span></span></div>
+          <div class="w-full bg-slate-700 rounded-full h-1.5 mt-2">
+            <div class="bg-blue-400 h-1.5 rounded-full transition-all" id="geminiImgBar" style="width: 0%"></div>
+          </div>
+        </div>
+        <!-- 文字請求 -->
+        <div class="glass-light rounded-xl p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-slate-400">💬 文字請求</span>
+          </div>
+          <div class="text-xl font-bold text-white" id="geminiText">0</div>
+          <div class="text-xs text-slate-500 mt-1">今日</div>
+        </div>
+        <!-- 錯誤 -->
+        <div class="glass-light rounded-xl p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-slate-400">❌ 錯誤次數</span>
+          </div>
+          <div class="text-xl font-bold" id="geminiErrors"><span class="text-white">0</span></div>
+          <div class="text-xs text-slate-500 mt-1">今日</div>
+        </div>
+      </div>
+      <!-- 7 天歷史 -->
+      <div class="mt-4">
+        <div class="text-xs text-slate-400 mb-2">📊 近 7 天用量</div>
+        <div class="flex items-end gap-1 h-16" id="geminiHistory">
+          <div class="text-xs text-slate-500 w-full text-center">載入中...</div>
+        </div>
+      </div>
+    </div>
+    
     <!-- Project List Table -->
     <div class="glass rounded-2xl p-5 mb-6 animate-fade-in animate-delay-2">
       <h3 class="text-lg font-semibold text-white mb-4"><i class="fas fa-folder text-indigo-400 mr-2"></i>專案列表 (9)</h3>
@@ -712,6 +767,11 @@
           renderSites(dashData.sites);
         }
 
+        // Gemini API Usage
+        if (dashData.geminiUsage) {
+          renderGeminiUsage(dashData.geminiUsage);
+        }
+
         // Data freshness
         if (dashData.generatedAt) {
           const genDate = new Date(dashData.generatedAt);
@@ -881,6 +941,60 @@
       });
     }
     
+    function renderGeminiUsage(usage) {
+      const today = usage.today || {};
+      const limits = usage.limits || { rpd: 500, image_rpd: 50 };
+      
+      document.getElementById('geminiDate').textContent = new Date().toLocaleDateString('zh-TW');
+      
+      // RPD
+      const rpd = today.total_requests || 0;
+      const rpdLimit = limits.rpd || 500;
+      const rpdPct = Math.min(100, Math.round(rpd / rpdLimit * 100));
+      document.getElementById('geminiRpd').textContent = rpd;
+      document.getElementById('geminiRpdLimit').textContent = rpdLimit;
+      document.getElementById('geminiRpdBar').style.width = rpdPct + '%';
+      document.getElementById('geminiRpdBar').className = `h-1.5 rounded-full transition-all ${rpdPct > 90 ? 'bg-red-400' : rpdPct > 70 ? 'bg-yellow-400' : 'bg-emerald-400'}`;
+      document.getElementById('geminiRpdStatus').textContent = rpdPct + '%';
+      document.getElementById('geminiRpdStatus').className = `text-xs font-mono ${rpdPct > 90 ? 'text-red-400' : rpdPct > 70 ? 'text-yellow-400' : 'text-emerald-400'}`;
+      
+      // Images
+      const img = today.image_requests || 0;
+      const imgLimit = limits.image_rpd || 50;
+      const imgPct = Math.min(100, Math.round(img / imgLimit * 100));
+      document.getElementById('geminiImg').textContent = img;
+      document.getElementById('geminiImgLimit').textContent = imgLimit;
+      document.getElementById('geminiImgBar').style.width = imgPct + '%';
+      document.getElementById('geminiImgBar').className = `h-1.5 rounded-full transition-all ${imgPct > 90 ? 'bg-red-400' : imgPct > 70 ? 'bg-yellow-400' : 'bg-blue-400'}`;
+      document.getElementById('geminiImgStatus').textContent = imgPct + '%';
+      document.getElementById('geminiImgStatus').className = `text-xs font-mono ${imgPct > 90 ? 'text-red-400' : imgPct > 70 ? 'text-yellow-400' : 'text-blue-400'}`;
+      
+      // Text & Errors
+      document.getElementById('geminiText').textContent = today.text_requests || 0;
+      const errors = today.errors || 0;
+      document.getElementById('geminiErrors').innerHTML = `<span class="${errors > 0 ? 'text-red-400' : 'text-white'}">${errors}</span>`;
+      
+      // 7-day history chart
+      const history = usage.history || {};
+      const historyEl = document.getElementById('geminiHistory');
+      const days = Object.entries(history);
+      if (days.length === 0) {
+        historyEl.innerHTML = '<div class="text-xs text-slate-500 w-full text-center">尚無歷史資料</div>';
+        return;
+      }
+      const maxReq = Math.max(...days.map(([,v]) => v.requests || v.total_requests || 1));
+      historyEl.innerHTML = days.map(([date, val]) => {
+        const reqs = val.requests || val.total_requests || 0;
+        const imgs = val.images || val.image_requests || 0;
+        const h = Math.max(4, Math.round((reqs / maxReq) * 56));
+        const day = date.slice(5);
+        return `<div class="flex-1 flex flex-col items-center gap-1">
+          <div class="w-full bg-emerald-500/60 rounded-t" style="height:${h}px" title="${date}: ${reqs}次 (${imgs}張圖)"></div>
+          <span class="text-[10px] text-slate-500">${day}</span>
+        </div>`;
+      }).join('');
+    }
+
     function getEmoji(name) {
       if (name.includes('孔雀') || name.includes('Aquarium')) return '🐟';
       if (name.includes('SEO') || name.includes('部落格')) return '📝';
