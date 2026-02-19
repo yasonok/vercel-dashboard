@@ -847,13 +847,14 @@
       }
       
       container.innerHTML = allSites.map((site, i) => `
-        <div class="glass-light rounded-xl p-3">
+        <a href="${site.url || '#'}" target="_blank" rel="noopener" class="glass-light rounded-xl p-3 hover-lift block ${site.url ? 'cursor-pointer' : ''}">
           <div class="flex items-center justify-between mb-2">
             <span class="text-sm font-medium text-white">${site.name}</span>
             <span class="status-dot status-checking" id="site-status-${i}"></span>
           </div>
           <div class="text-xs text-slate-400" id="site-label-${i}">檢查中...</div>
-        </div>
+          ${site.url ? `<div class="text-xs text-indigo-400 mt-1 truncate"><i class="fas fa-external-link-alt mr-1"></i>${site.url.replace('https://', '')}</div>` : ''}
+        </a>
       `).join('');
       
       // Actually check each site
