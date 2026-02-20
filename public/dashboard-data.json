@@ -4,22 +4,22 @@
     {
       "id": "sarah_agent",
       "name": "Sarah",
-      "model": "MiniMax M2.5",
-      "role": "Sarah。妳是 Project Manager (PM)，由 MiniMax M2.5 驅動。",
-      "provider": "minimax"
+      "model": "Claude Opus",
+      "role": "Sarah。妳是 Project Manager (PM)，由 Claude Opus 驅動。",
+      "provider": "ag_manager"
     },
     {
       "id": "mars_agent",
       "name": "Mars",
-      "model": "Gemini 3 Pro",
-      "role": "Mars。妳是 Architect (架構師)，由 Gemini 3 Pro 驅動。",
+      "model": "Claude Opus",
+      "role": "Mars。妳是 Architect (架構師)，由 Claude Opus 驅動。",
       "provider": "ag_manager"
     },
     {
       "id": "ryan_agent",
       "name": "Ryan",
-      "model": "Claude Opus Thinking",
-      "role": "Ryan。你是 Lead Engineer (首席工程師)，由 Claude Thinking 驅動。",
+      "model": "Claude Opus",
+      "role": "Ryan。你是 Lead Engineer (首席工程師)，由 Claude Opus 驅動。",
       "provider": "ag_manager"
     }
   ],
@@ -218,19 +218,6 @@
       ]
     },
     {
-      "id": "dashboard",
-      "name": "Project Dashboard",
-      "desc": "專案管理監控中心",
-      "url": "https://vercel-dashboard-drab.vercel.app",
-      "status": "active",
-      "folder": "vercel-dashboard",
-      "color": "red",
-      "notes": [
-        "dashboard",
-        "monitor"
-      ]
-    },
-    {
       "id": "agent-monitor",
       "name": "Agent Monitor",
       "desc": "OpenClaw Agent 監控",
@@ -268,8 +255,8 @@
       "status": "active"
     },
     {
-      "name": "Project Dashboard",
-      "url": "https://vercel-dashboard-drab.vercel.app",
+      "name": "Dashboard",
+      "url": "https://vercel-dashboard-omega.vercel.app",
       "status": "active"
     }
   ],

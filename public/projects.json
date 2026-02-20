@@ -67,16 +67,6 @@
       "notes": ["team", "collab", "agent"]
     },
     {
-      "id": "dashboard",
-      "name": "Project Dashboard",
-      "desc": "專案管理監控中心",
-      "url": "https://vercel-dashboard-drab.vercel.app",
-      "status": "active",
-      "folder": "vercel-dashboard",
-      "color": "red",
-      "notes": ["dashboard", "monitor"]
-    },
-    {
       "id": "agent-monitor",
       "name": "Agent Monitor",
       "desc": "OpenClaw Agent 監控",

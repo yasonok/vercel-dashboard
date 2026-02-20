@@ -108,7 +108,7 @@ async function generateData() {
 
   // 5. Gemini API usage
   try {
-    const usagePath = path.join(process.env.HOME, '.openclaw/workspace/seo-blog-next/scripts/gemini-usage.json');
+    const usagePath = path.join(process.env.HOME, '.openclaw/workspace/gemini-usage.json');
     if (fs.existsSync(usagePath)) {
       const usageRaw = fs.readFileSync(usagePath, 'utf8');
       const usageData = JSON.parse(usageRaw);
